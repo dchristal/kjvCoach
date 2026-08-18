@@ -43,6 +43,19 @@
     ]
   },
   {
+    "id": "god-moses-jesus-77x77",
+    "label": "God('s) + Moses(') + Jesus = 77×77 = 5,929",
+    "url": "https://kjvcode.com/pattern/god-moses-jesus-77x77/",
+    "note": "God('s)=4,101 + Moses(')=848 + Jesus pure=980. Verse-level exclusion of 3 antimetion verses (Acts 7:45, Col 4:11, Heb 4:8) which also contain God. kjvcode.com reports 4102+847 for the individual names; we get 4101+848 — same total 5,929.",
+    "expected": 5929,
+    "type": "god_moses_jesus",
+    "jesus_antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45},
+      {"book": "Colossians", "chapter": 4,  "verse": 11},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
+    ]
+  },
+  {
     "id": "jesus-christ-david-abraham-980x3",
     "label": "Jesus + Christ('s) + David('s) + Abraham('s) = 980×3 = 2,940",
     "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",

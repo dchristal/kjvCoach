@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "four_names_980x3":
+        if ptype == "god_moses_jesus":
+            r = _verify_god_moses_jesus(p, db)
+        elif ptype == "four_names_980x3":
             r = _verify_four_names(p, db)
         elif ptype == "jesus_god_7777":
             r = _verify_jesus_god_7777(p, db)
@@ -499,6 +501,50 @@ def _verify_four_names(p: dict, db) -> dict:
             for lbl, cnt, exp in components
         ],
         "actual": sum(cnt for _, cnt, _ in components),
+    }
+
+
+def _verify_god_moses_jesus(p: dict, db) -> dict:
+    corpus = _kjv_corpus()
+    curly  = chr(0x2019)  # U+2019 RIGHT SINGLE QUOTATION MARK (used for possessives in KJV)
+
+    # CCDB authoritative totals (base + possessive forms)
+    god_ccdb   = (db.word_count("god",   exact_form="God")
+                + sum(db.word_forms("god"   + curly + "s").values()))
+    moses_ccdb = (db.word_count("moses", exact_form="Moses")
+                + sum(db.word_forms("moses" + curly).values()))
+
+    # Verse-level antimentions: same 3 verses as Jesus antimentions.
+    # Those verses also contain "God" — exclude all name occurrences in them.
+    anti_set = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+
+    pat_God   = re.compile(r"\bGod\b")
+    pat_Moses = re.compile(r"\bMoses\b")
+    pat_J     = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+
+    god_anti = moses_anti = jesus = 0
+    for b, ch, v, text in corpus:
+        if (b, ch, v) in anti_set:
+            god_anti   += len(pat_God.findall(text))
+            moses_anti += len(pat_Moses.findall(text))
+        else:
+            jesus += len(pat_J.findall(text)) + len(pat_JESUS.findall(text))
+
+    god   = god_ccdb   - god_anti
+    moses = moses_ccdb - moses_anti
+
+    components = [
+        ("God('s) — CCDB 1769, antimetion verses excluded", god,   4102),
+        ("Moses(') — CCDB 1769, antimetion verses excluded", moses, 847),
+        ("Jesus (pure) — 3 antimentions excluded",            jesus, 980),
+    ]
+    return {
+        "breakdown": [
+            {"label": lbl, "count": cnt, "expected": exp}
+            for lbl, cnt, exp in components
+        ],
+        "actual": god + moses + jesus,
     }
 
 

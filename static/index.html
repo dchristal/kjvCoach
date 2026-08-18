@@ -422,6 +422,7 @@ function renderPattern(p) {
   if (p.type === 'staircase_verses')  return renderStaircase(p);
   if (p.type === 'jesus_god_7777')   return renderJesusGod7777(p);
   if (p.type === 'four_names_980x3') return renderFourNames(p);
+  if (p.type === 'god_moses_jesus')  return renderGodMosesJesus(p);
   return renderWordSum(p);
 }
 
@@ -464,6 +465,46 @@ function renderFourNames(p) {
         ${rows}
         <tr class="total-row">
           <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)} = 980×3</td>
+          <td class="col-count">${fmt(p.actual)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function renderGodMosesJesus(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
+  const rows = p.breakdown.map(t => {
+    const diff = t.count - t.expected;
+    const diffStr = diff !== 0
+      ? ` <span style="font-size:.75rem;color:#b00">(${diff>0?'+':''}${fmt(diff)} vs kjvcode)</span>`
+      : '';
+    return `<tr>
+      <td style="padding:7px 14px">${escHtml(t.label)}</td>
+      <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">kjvcode: ${fmt(t.expected)}</td>
+      <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}${diffStr}</td>
+    </tr>`;
+  }).join('');
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <table class="breakdown-table">
+      <thead><tr>
+        <th>Name</th><th style="text-align:right">kjvcode</th><th style="text-align:right">Our count</th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">
+          <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)} = 77×77</td>
           <td class="col-count">${fmt(p.actual)}</td>
         </tr>
       </tbody>
