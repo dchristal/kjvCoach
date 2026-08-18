@@ -56,6 +56,22 @@
     ]
   },
   {
+    "id": "jesus-elijah-77x7",
+    "label": "Jesus + Elijah + Elias = 77×7 + 77×7 = 1,078",
+    "url": "https://kjvcode.com/pattern/jesus-elijah-77x7/",
+    "note": "Jesus pure=980, Elijah=68 (Ezra 10:21 excluded — different person), Elias=30. Total 1,078 = 2×539 = 2×(77×7). No possessives of Elijah or Elias exist in the KJV.",
+    "expected": 1078,
+    "type": "jesus_elijah",
+    "jesus_antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45},
+      {"book": "Colossians", "chapter": 4,  "verse": 11},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
+    ],
+    "elijah_antimentions": [
+      {"book": "Ezra", "chapter": 10, "verse": 21, "note": "A different Elijah — one of the sons of Harim who took a foreign wife"}
+    ]
+  },
+  {
     "id": "jesus-christ-david-abraham-980x3",
     "label": "Jesus + Christ('s) + David('s) + Abraham('s) = 980×3 = 2,940",
     "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",

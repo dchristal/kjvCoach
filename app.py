@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "god_moses_jesus":
+        if ptype == "jesus_elijah":
+            r = _verify_jesus_elijah(p)
+        elif ptype == "god_moses_jesus":
             r = _verify_god_moses_jesus(p, db)
         elif ptype == "four_names_980x3":
             r = _verify_four_names(p, db)
@@ -501,6 +503,40 @@ def _verify_four_names(p: dict, db) -> dict:
             for lbl, cnt, exp in components
         ],
         "actual": sum(cnt for _, cnt, _ in components),
+    }
+
+
+def _verify_jesus_elijah(p: dict) -> dict:
+    corpus = _kjv_corpus()
+
+    j_anti = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+    e_anti = {(a["book"], a["chapter"], a["verse"]) for a in p.get("elijah_antimentions", [])}
+
+    pat_J     = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+    pat_elijah = re.compile(r"\bElijah\b")
+    pat_elias  = re.compile(r"\bElias\b")
+
+    jesus = elijah = elias = 0
+    for b, ch, v, text in corpus:
+        key = (b, ch, v)
+        if key not in j_anti:
+            jesus += len(pat_J.findall(text)) + len(pat_JESUS.findall(text))
+        if key not in e_anti:
+            elijah += len(pat_elijah.findall(text))
+        elias += len(pat_elias.findall(text))
+
+    components = [
+        ("Jesus (pure) — 3 antimentions excluded",          jesus,  980),
+        ("Elijah — Ezra 10:21 antimentation excluded",       elijah,  68),
+        ("Elias (NT form of Elijah) — no antimentions",      elias,   30),
+    ]
+    return {
+        "breakdown": [
+            {"label": lbl, "count": cnt, "expected": exp}
+            for lbl, cnt, exp in components
+        ],
+        "actual": jesus + elijah + elias,
     }
 
 
