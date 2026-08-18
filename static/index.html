@@ -418,10 +418,97 @@ function renderVerify(d) {
 }
 
 function renderPattern(p) {
+  if (p.type === 'alternating_books') return renderAlternatingBooks(p);
+  return renderWordSum(p);
+}
+
+function renderAlternatingBooks(p) {
   const passClass = p.pass ? 'badge-pass' : 'badge-fail';
   const passIcon  = p.pass ? '✓' : '✗';
 
-  // Build breakdown rows
+  // Book table
+  let oddRows = '', evenRows = '';
+  for (const b of p.breakdown) {
+    const row = `<tr>
+      <td style="padding:5px 10px">${b.number}. ${escHtml(b.book)}</td>
+      <td style="padding:5px 10px;text-align:right;font-weight:700">${fmt(b.count)}</td>
+    </tr>`;
+    if (b.parity === 'odd') oddRows += row;
+    else evenRows += row;
+  }
+
+  const oddPass  = p.odd_total  === (p.expected / 2) ? 'badge-pass' : 'badge-fail';
+  const evenPass = p.even_total === (p.expected / 2) ? 'badge-pass' : 'badge-fail';
+
+  const antiList = p.antimentions.map(a =>
+    `<span class="form-chip">${escHtml(a.ref)}</span>`).join(' ');
+
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid #f0ece3">
+      <div style="border-right:1px solid #f0ece3">
+        <div style="background:#f8f5ef;padding:7px 10px;font-size:.72rem;font-weight:700;
+          color:#7a5a2b;letter-spacing:.05em;text-transform:uppercase">
+          Odd-numbered books
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          ${oddRows}
+          <tr style="background:#f8f5ef;border-top:2px solid #ddd4c0">
+            <td style="padding:7px 10px;font-weight:700">ODD TOTAL</td>
+            <td style="padding:7px 10px;text-align:right;font-weight:700;font-size:1rem">
+              <span class="result-badge ${oddPass}" style="padding:2px 8px;font-size:.8rem">
+                ${fmt(p.odd_total)}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div>
+        <div style="background:#f8f5ef;padding:7px 10px;font-size:.72rem;font-weight:700;
+          color:#7a5a2b;letter-spacing:.05em;text-transform:uppercase">
+          Even-numbered books
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          ${evenRows}
+          <tr style="background:#f8f5ef;border-top:2px solid #ddd4c0">
+            <td style="padding:7px 10px;font-weight:700">EVEN TOTAL</td>
+            <td style="padding:7px 10px;text-align:right;font-weight:700;font-size:1rem">
+              <span class="result-badge ${evenPass}" style="padding:2px 8px;font-size:.8rem">
+                ${fmt(p.even_total)}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="pattern-result">
+      <strong>4 antimentions excluded</strong> (Jesus referring to someone other than Christ):
+      ${antiList}
+    </div>
+    <div class="pattern-result" style="border-top:2px solid #ddd4c0;font-size:.9rem">
+      <strong>TOTAL: ${fmt(p.actual)}</strong>
+      &nbsp;=&nbsp; ${fmt(p.odd_total)} + ${fmt(p.even_total)}
+      &nbsp;&nbsp; expected: ${fmt(p.expected)}
+      &nbsp;&nbsp;
+      <span class="result-badge ${passClass}" style="padding:2px 8px">
+        ${p.pass?'✓ VERIFIED':'✗ MISMATCH'}
+      </span>
+    </div>
+  </div>`;
+}
+
+function renderWordSum(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
   let rows = '';
   for (const t of p.breakdown) {
     if (t.word === '__raw__') {

@@ -41,5 +41,24 @@
         "exact_form": "Amen"
       }
     ]
+  },
+  {
+    "id": "jesus-70x7",
+    "label": "Jesus = 70×7 in Every Other NT Book (980 total)",
+    "url": "https://kjvcode.com/pattern/jesus-70x7/",
+    "note": "490 in odd-numbered NT books + 490 in even-numbered NT books. 4 antimentions excluded (Acts 7:45, Acts 13:6, Colossians 4:11, Hebrews 4:8).",
+    "expected": 980,
+    "type": "alternating_books",
+    "term": "Jesus",
+    "case_sensitive": false,
+    "testament": "NT",
+    "expected_odd": 490,
+    "expected_even": 490,
+    "antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45},
+      {"book": "Acts",       "chapter": 13, "verse": 6},
+      {"book": "Colossians", "chapter": 4,  "verse": 11},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
+    ]
   }
 ]

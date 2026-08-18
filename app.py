@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import ccdb as _ccdb
+import kjvcode as _kjv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -382,55 +383,117 @@ def stats():
     return _compute_stats()
 
 
+_KJV_TXT = Path(BASE_DIR) / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+_NT_BOOKS = [
+    "Matthew","Mark","Luke","John","Acts","Romans",
+    "1 Corinthians","2 Corinthians","Galatians","Ephesians",
+    "Philippians","Colossians","1 Thessalonians","2 Thessalonians",
+    "1 Timothy","2 Timothy","Titus","Philemon","Hebrews",
+    "James","1 Peter","2 Peter","1 John","2 John","3 John",
+    "Jude","Revelation",
+]
+
+@lru_cache(maxsize=1)
+def _kjv_corpus():
+    return _kjv._load_kjv(Path("/nonexistent"), _KJV_TXT)
+
+
+def _verify_word_sum(p: dict, db) -> dict:
+    breakdown, total = [], 0
+    for term in p["terms"]:
+        word, label, exact = term["word"], term["label"], term.get("exact_form")
+        if word == "__raw__":
+            count = db.raw_token_count()
+            forms = {"(all whitespace-split tokens)": count}
+        else:
+            forms = db.word_forms(word)
+            count = forms.get(exact, 0) if exact is not None else sum(forms.values())
+        total += count
+        breakdown.append({"label": label, "word": word, "exact": exact,
+                          "forms": forms, "count": count})
+    return {"breakdown": breakdown, "actual": total}
+
+
+def _verify_alternating_books(p: dict) -> dict:
+    corpus = _kjv_corpus()
+    term = p["term"]
+    cs   = p.get("case_sensitive", False)
+    pat  = re.compile(r"\b" + re.escape(term) + r"\b", 0 if cs else re.IGNORECASE)
+
+    # Build antimentation set: {(book, chapter, verse)}
+    anti = {(a["book"], a["chapter"], a["verse"]) for a in p.get("antimentions", [])}
+
+    books = _NT_BOOKS if p.get("testament") == "NT" else _NT_BOOKS
+    book_counts = {}
+    for book in books:
+        total = 0
+        for b, ch, v, text in corpus:
+            if b != book:
+                continue
+            hits = len(pat.findall(text))
+            if (book, ch, v) in anti:
+                hits = 0
+            total += hits
+        book_counts[book] = total
+
+    odd_total  = sum(c for i, b in enumerate(books, 1) if i % 2 == 1 for c in [book_counts[b]])
+    even_total = sum(c for i, b in enumerate(books, 1) if i % 2 == 0 for c in [book_counts[b]])
+    actual     = odd_total + even_total
+
+    book_rows = [
+        {
+            "book":   b,
+            "number": i,
+            "parity": "odd" if i % 2 == 1 else "even",
+            "count":  book_counts[b],
+        }
+        for i, b in enumerate(books, 1)
+    ]
+
+    return {
+        "breakdown": book_rows,
+        "actual":    actual,
+        "odd_total": odd_total,
+        "even_total": even_total,
+        "antimentions": [
+            {"ref": f"{a['book']} {a['chapter']}:{a['verse']}"}
+            for a in p.get("antimentions", [])
+        ],
+    }
+
+
 @app.get("/verify")
 def verify():
-    """Run every pattern in patterns.json against the 1769 Blayney text and return results."""
+    """Run every pattern in patterns.json against the KJV text and return results."""
     _require_db()
     db = _ccdb.load()
     patterns = json.loads(PATTERNS_PATH.read_text())
-    results = []
+    results  = []
 
     for p in patterns:
-        breakdown = []
-        total = 0
-
-        for term in p["terms"]:
-            word      = term["word"]
-            label     = term["label"]
-            exact     = term.get("exact_form")
-
-            if word == "__raw__":
-                count  = db.raw_token_count()
-                forms  = {"(all whitespace-split tokens)": count}
-            else:
-                forms  = db.word_forms(word)
-                if exact is not None:
-                    count = forms.get(exact, 0)
-                else:
-                    count = sum(forms.values())
-
-            total += count
-            breakdown.append({
-                "label":  label,
-                "word":   word,
-                "exact":  exact,
-                "forms":  forms,
-                "count":  count,
-            })
+        ptype = p.get("type", "word_sum")
+        if ptype == "alternating_books":
+            r = _verify_alternating_books(p)
+        else:
+            r = _verify_word_sum(p, db)
 
         expected = p["expected"]
         results.append({
-            "id":        p["id"],
-            "label":     p["label"],
-            "url":       p.get("url", ""),
-            "note":      p.get("note", ""),
-            "expected":  expected,
-            "actual":    total,
-            "pass":      total == expected,
-            "breakdown": breakdown,
+            "id":       p["id"],
+            "label":    p["label"],
+            "url":      p.get("url", ""),
+            "note":     p.get("note", ""),
+            "type":     ptype,
+            "expected": expected,
+            "actual":   r["actual"],
+            "pass":     r["actual"] == expected,
+            **{k: v for k, v in r.items() if k not in ("actual",)},
         })
 
-    return {"source": "KJV 1769 Blayney (KJPBS bbl-kjv1769.ccdb)", "patterns": results}
+    return {
+        "source":   "KJV 1769 Blayney concordance text + KJPBS bbl-kjv1769.ccdb",
+        "patterns": results,
+    }
 
 
 if __name__ == "__main__":
