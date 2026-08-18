@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "staircase_verses":
+        if ptype == "jesus_god_7777":
+            r = _verify_jesus_god_7777(p, db)
+        elif ptype == "staircase_verses":
             r = _verify_staircase_verses(p)
         elif ptype == "jesus_christ_777":
             r = _verify_jesus_christ(p)
@@ -455,6 +457,48 @@ def _verify_word_sum(p: dict, db) -> dict:
         breakdown.append({"label": label, "word": word, "exact": exact,
                           "forms": forms, "count": count})
     return {"breakdown": breakdown, "actual": total}
+
+
+def _verify_jesus_god_7777(p: dict, db) -> dict:
+    corpus = _kjv_corpus()
+
+    # God titles from CCDB (exact all-caps forms)
+    LORD    = db.word_count("lord",    exact_form="LORD")
+    GOD     = db.word_count("god",     exact_form="GOD")
+    JEHOVAH = db.word_count("jehovah", exact_form="JEHOVAH")
+    JAH     = db.word_count("jah",     exact_form="JAH")
+    BRANCH  = db.word_count("branch",  exact_form="BRANCH")
+    KING    = db.word_count("king",    exact_form="KING")
+
+    # I AM: count occurrences in Exodus 3:14 only (God's self-declared name)
+    pat_iam = re.compile(r"\bI AM\b")
+    I_AM = sum(len(pat_iam.findall(t))
+               for b, ch, v, t in corpus if b == "Exodus" and ch == 3 and v == 14)
+
+    # Jesus pure: all forms minus antimentions (same as pattern 3)
+    pat_J     = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+    j_anti    = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+    jesus_pure = sum(
+        len(pat_J.findall(t)) + len(pat_JESUS.findall(t))
+        for b, ch, v, t in corpus if (b, ch, v) not in j_anti
+    )
+
+    components = [
+        ("LORD (all caps)",     LORD),
+        ("GOD (all caps)",      GOD),
+        ("JEHOVAH",             JEHOVAH),
+        ("I AM — Exodus 3:14 only", I_AM),
+        ("JAH",                 JAH),
+        ("BRANCH (all caps)",   BRANCH),
+        ("KING (all caps)",     KING),
+        ("Jesus/JESUS (pure, 3 antimentions excluded)", jesus_pure),
+    ]
+
+    return {
+        "breakdown": [{"label": lbl, "count": cnt} for lbl, cnt in components],
+        "actual":    sum(cnt for _, cnt in components),
+    }
 
 
 def _verify_staircase_verses(p: dict) -> dict:

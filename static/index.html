@@ -420,7 +420,43 @@ function renderPattern(p) {
   if (p.type === 'father_son')        return renderFatherSon(p);
   if (p.type === 'jesus_christ_777')  return renderJesusChrist(p);
   if (p.type === 'staircase_verses')  return renderStaircase(p);
+  if (p.type === 'jesus_god_7777')   return renderJesusGod7777(p);
   return renderWordSum(p);
+}
+
+function renderJesusGod7777(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
+  const rows = p.breakdown.map(t => `<tr>
+    <td style="padding:7px 14px">${escHtml(t.label)}</td>
+    <td style="padding:7px 14px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums">${fmt(t.count)}</td>
+  </tr>`).join('');
+
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <table class="breakdown-table">
+      <thead><tr>
+        <th>Component</th>
+        <th style="text-align:right">Count</th>
+      </tr></thead>
+      <tbody>
+        ${rows}
+        <tr class="total-row">
+          <td><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)}</td>
+          <td class="col-count">${fmt(p.actual)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 }
 
 function renderStaircase(p) {
