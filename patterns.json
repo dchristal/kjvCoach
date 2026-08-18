@@ -43,6 +43,19 @@
     ]
   },
   {
+    "id": "jesus-christ-david-abraham-980x3",
+    "label": "Jesus + Christ('s) + David('s) + Abraham('s) = 980×3 = 2,940",
+    "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",
+    "note": "Jesus pure=980, Christ('s)=571, David('s)=1139, Abraham('s)=250. Possessives use curly apostrophes in the text. Same 3 Jesus antimentions as pattern 3.",
+    "expected": 2940,
+    "type": "four_names_980x3",
+    "jesus_antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8},
+      {"book": "Colossians", "chapter": 4,  "verse": 11}
+    ]
+  },
+  {
     "id": "jesus-god-7777",
     "label": "Jesus + GOD (uppercase titles) = 7,777",
     "url": "https://kjvcode.com/pattern/jesus-god-uppercase-7777x/",

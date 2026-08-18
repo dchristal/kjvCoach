@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "jesus_god_7777":
+        if ptype == "four_names_980x3":
+            r = _verify_four_names(p)
+        elif ptype == "jesus_god_7777":
             r = _verify_jesus_god_7777(p, db)
         elif ptype == "staircase_verses":
             r = _verify_staircase_verses(p)
@@ -457,6 +459,44 @@ def _verify_word_sum(p: dict, db) -> dict:
         breakdown.append({"label": label, "word": word, "exact": exact,
                           "forms": forms, "count": count})
     return {"breakdown": breakdown, "actual": total}
+
+
+def _verify_four_names(p: dict) -> dict:
+    corpus = _kjv_corpus()
+
+    # Jesus pure (same method as pattern 3)
+    pat_Jmix  = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+    j_anti    = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+    jesus = sum(
+        len(pat_Jmix.findall(t)) + len(pat_JESUS.findall(t))
+        for b, ch, v, t in corpus if (b, ch, v) not in j_anti
+    )
+
+    # Christ('s), David('s), Abraham('s) — possessives use curly apostrophes,
+    # so \bName\b already captures Name and Name's (curly quote is non-word char)
+    def count_name(name):
+        pat = re.compile(r"\b" + name + r"\b")
+        return sum(len(pat.findall(t)) for _, _, _, t in corpus)
+
+    christ   = count_name("Christ")
+    david    = count_name("David")
+    abraham  = count_name("Abraham")
+
+    components = [
+        ("Jesus / JESUS (pure, 3 antimentions excluded)", jesus,   980),
+        ("Christ('s)",                                    christ,  571),
+        ("David('s)",                                     david,   1139),
+        ("Abraham('s)",                                   abraham, 250),
+    ]
+
+    return {
+        "breakdown": [
+            {"label": lbl, "count": cnt, "expected": exp}
+            for lbl, cnt, exp in components
+        ],
+        "actual": sum(cnt for _, cnt, _ in components),
+    }
 
 
 def _verify_jesus_god_7777(p: dict, db) -> dict:
