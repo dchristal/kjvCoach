@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "jesus_elijah":
+        if ptype == "fishermen_153":
+            r = _verify_fishermen_153(p)
+        elif ptype == "jesus_elijah":
             r = _verify_jesus_elijah(p)
         elif ptype == "god_moses_jesus":
             r = _verify_god_moses_jesus(p, db)
@@ -503,6 +505,48 @@ def _verify_four_names(p: dict, db) -> dict:
             for lbl, cnt, exp in components
         ],
         "actual": sum(cnt for _, cnt, _ in components),
+    }
+
+
+def _verify_fishermen_153(p: dict) -> dict:
+    corpus  = _kjv_corpus()
+    GOSPELS = {"Matthew", "Mark", "Luke", "John"}
+
+    # James antimentions: James the Less (son of Alphaeus, 8×) + half-brother of Jesus (2×)
+    james_anti  = {(a["book"], a["chapter"], a["verse"]) for a in p.get("james_antimentions", [])}
+    # John whitelist: only these verses have John the Apostle (all others = John the Baptist)
+    john_apostle = {(a["book"], a["chapter"], a["verse"]) for a in p.get("john_apostle_verses", [])}
+
+    pat_peter = re.compile(r"\bPeter\b")    # also matches Peter's (curly apos is non-word)
+    pat_thom  = re.compile(r"\bThomas\b")
+    pat_nath  = re.compile(r"\bNathanael\b")
+    pat_james = re.compile(r"\bJames\b")
+    pat_john  = re.compile(r"\bJohn\b")
+
+    peter = thomas = nathanael = james = john = 0
+    for b, ch, v, text in corpus:
+        if b not in GOSPELS:
+            continue
+        key = (b, ch, v)
+        peter     += len(pat_peter.findall(text))
+        thomas    += len(pat_thom.findall(text))
+        nathanael += len(pat_nath.findall(text))
+        if key not in james_anti:
+            james += len(pat_james.findall(text))
+        if key in john_apostle:
+            john += len(pat_john.findall(text))
+
+    components = [
+        ("Peter (incl. Peter's) — Gospels only, no antimentions",            peter,     97),
+        ("Thomas — Gospels only, no antimentions",                            thomas,    11),
+        ("Nathanael — Gospels only, no antimentions",                         nathanael,  6),
+        ("James (son of Zebedee) — 10 antimentions excluded",                 james,     19),
+        ("John (son of Zebedee) — 83 John the Baptist verses excluded",        john,      20),
+    ]
+    return {
+        "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
+                      for lbl, cnt, exp in components],
+        "actual": peter + thomas + nathanael + james + john,
     }
 
 

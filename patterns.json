@@ -56,6 +56,48 @@
     ]
   },
   {
+    "id": "fishermen-153",
+    "label": "Five Fishermen (John 21:2) = 153× in the Gospels",
+    "url": "https://kjvcode.com/pattern/153-fishes/",
+    "note": "Peter(97)+Thomas(11)+Nathanael(6)+James(19)+John(20)=153. James excludes James the Less (8×) and half-brother of Jesus (2×). John uses a whitelist of 20 apostle-John verses; all other Gospel 'John' mentions = John the Baptist (83 excluded).",
+    "expected": 153,
+    "type": "fishermen_153",
+    "james_antimentions": [
+      {"book": "Matthew", "chapter": 10, "verse": 3,  "note": "James the son of Alphaeus (James the Less)"},
+      {"book": "Matthew", "chapter": 13, "verse": 55, "note": "James, half-brother of Jesus"},
+      {"book": "Matthew", "chapter": 27, "verse": 56, "note": "Mary the mother of James and Joses (James the Less)"},
+      {"book": "Mark",    "chapter": 3,  "verse": 18, "note": "James the son of Alphaeus (James the Less)"},
+      {"book": "Mark",    "chapter": 6,  "verse": 3,  "note": "James, half-brother of Jesus"},
+      {"book": "Mark",    "chapter": 15, "verse": 40, "note": "Mary the mother of James the less"},
+      {"book": "Mark",    "chapter": 16, "verse": 1,  "note": "Mary the mother of James (James the Less)"},
+      {"book": "Luke",    "chapter": 6,  "verse": 15, "note": "James the son of Alphaeus (James the Less)"},
+      {"book": "Luke",    "chapter": 6,  "verse": 16, "note": "Judas the brother of James (James the Less)"},
+      {"book": "Luke",    "chapter": 24, "verse": 10, "note": "Mary the mother of James (James the Less)"}
+    ],
+    "john_apostle_verses": [
+      {"book": "Matthew", "chapter": 4,  "verse": 21},
+      {"book": "Matthew", "chapter": 10, "verse": 2},
+      {"book": "Matthew", "chapter": 17, "verse": 1},
+      {"book": "Mark",    "chapter": 1,  "verse": 19},
+      {"book": "Mark",    "chapter": 1,  "verse": 29},
+      {"book": "Mark",    "chapter": 3,  "verse": 17},
+      {"book": "Mark",    "chapter": 5,  "verse": 37},
+      {"book": "Mark",    "chapter": 9,  "verse": 2},
+      {"book": "Mark",    "chapter": 9,  "verse": 38},
+      {"book": "Mark",    "chapter": 10, "verse": 35},
+      {"book": "Mark",    "chapter": 10, "verse": 41},
+      {"book": "Mark",    "chapter": 13, "verse": 3},
+      {"book": "Mark",    "chapter": 14, "verse": 33},
+      {"book": "Luke",    "chapter": 5,  "verse": 10},
+      {"book": "Luke",    "chapter": 6,  "verse": 14},
+      {"book": "Luke",    "chapter": 8,  "verse": 51},
+      {"book": "Luke",    "chapter": 9,  "verse": 28},
+      {"book": "Luke",    "chapter": 9,  "verse": 49},
+      {"book": "Luke",    "chapter": 9,  "verse": 54},
+      {"book": "Luke",    "chapter": 22, "verse": 8}
+    ]
+  },
+  {
     "id": "jesus-elijah-77x7",
     "label": "Jesus + Elijah + Elias = 77×7 + 77×7 = 1,078",
     "url": "https://kjvcode.com/pattern/jesus-elijah-77x7/",
