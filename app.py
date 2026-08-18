@@ -1,19 +1,23 @@
 """kjvCoach — scripture-only KJV lookup and deterministic Bible facts."""
 
+import json
 import os
 import re
 import sqlite3
 from collections import Counter
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import ccdb as _ccdb
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-DB_PATH    = os.path.join(BASE_DIR, "kjv.db")
-STATIC_DIR = os.path.join(BASE_DIR, "static")
+BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
+DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
+STATIC_DIR    = os.path.join(BASE_DIR, "static")
+PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -376,6 +380,57 @@ def _compute_stats() -> Dict[str, Any]:
 def stats():
     _require_db()
     return _compute_stats()
+
+
+@app.get("/verify")
+def verify():
+    """Run every pattern in patterns.json against the 1769 Blayney text and return results."""
+    _require_db()
+    db = _ccdb.load()
+    patterns = json.loads(PATTERNS_PATH.read_text())
+    results = []
+
+    for p in patterns:
+        breakdown = []
+        total = 0
+
+        for term in p["terms"]:
+            word      = term["word"]
+            label     = term["label"]
+            exact     = term.get("exact_form")
+
+            if word == "__raw__":
+                count  = db.raw_token_count()
+                forms  = {"(all whitespace-split tokens)": count}
+            else:
+                forms  = db.word_forms(word)
+                if exact is not None:
+                    count = forms.get(exact, 0)
+                else:
+                    count = sum(forms.values())
+
+            total += count
+            breakdown.append({
+                "label":  label,
+                "word":   word,
+                "exact":  exact,
+                "forms":  forms,
+                "count":  count,
+            })
+
+        expected = p["expected"]
+        results.append({
+            "id":        p["id"],
+            "label":     p["label"],
+            "url":       p.get("url", ""),
+            "note":      p.get("note", ""),
+            "expected":  expected,
+            "actual":    total,
+            "pass":      total == expected,
+            "breakdown": breakdown,
+        })
+
+    return {"source": "KJV 1769 Blayney (KJPBS bbl-kjv1769.ccdb)", "patterns": results}
 
 
 if __name__ == "__main__":

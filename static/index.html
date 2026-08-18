@@ -78,6 +78,42 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
 .hidden{display:none}
 .loading{text-align:center;padding:50px;color:#aaa;font-style:italic}
 .err{color:#b00;padding:10px 14px;background:#fff0f0;border-radius:6px;font-size:.88rem;margin-top:8px}
+
+/* ---- Verify tab ---- */
+.verify-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+.verify-title{font-size:1.1rem;font-weight:700;color:#5a3e1b;margin-bottom:4px}
+.verify-sub{font-size:.8rem;color:#999;line-height:1.5;max-width:600px}
+
+.pattern-card{background:#fff;border:1px solid #ddd4c0;border-radius:10px;margin-bottom:18px;overflow:hidden}
+.pattern-head{display:flex;justify-content:space-between;align-items:flex-start;
+  padding:14px 18px 10px;border-bottom:1px solid #f0ece3;gap:12px}
+.pattern-title{font-size:1rem;font-weight:700;color:#2c2416;margin-bottom:3px}
+.pattern-note{font-size:.78rem;color:#999;font-style:italic}
+.pattern-link{font-size:.75rem;color:#7a5a2b;white-space:nowrap;text-decoration:none;opacity:.75}
+.pattern-link:hover{opacity:1;text-decoration:underline}
+
+.breakdown-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.breakdown-table th{background:#f8f5ef;color:#7a5a2b;text-align:left;
+  padding:7px 14px;font-size:.72rem;letter-spacing:.05em;text-transform:uppercase;
+  border-bottom:1px solid #ece8df}
+.breakdown-table td{padding:8px 14px;border-bottom:1px solid #f5f2ec;vertical-align:top}
+.breakdown-table tr:last-child td{border-bottom:none}
+.breakdown-table .col-count{text-align:right;font-weight:700;color:#2c2416;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.breakdown-table .col-forms{color:#666;font-family:monospace;font-size:.8rem;line-height:1.6}
+.form-chip{display:inline-block;background:#f0ece3;border-radius:3px;
+  padding:1px 6px;margin:1px 2px;white-space:nowrap}
+.form-chip.form-active{background:#e8f4e8;color:#2a6b3a;font-weight:700}
+
+.total-row td{background:#f8f5ef;font-weight:700;border-top:2px solid #ddd4c0 !important}
+.total-row .col-count{font-size:1.1rem;color:#5a3e1b}
+
+.result-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;
+  border-radius:20px;font-size:.8rem;font-weight:700;white-space:nowrap}
+.badge-pass{background:#d4edda;color:#1a5c2a}
+.badge-fail{background:#f8d7da;color:#842029}
+.pattern-result{display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:#f8f5ef;font-size:.82rem;color:#666}
 </style>
 </head>
 <body>
@@ -88,6 +124,7 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
   <nav>
     <button class="active" id="btn-search" onclick="showTab('search')">Search</button>
     <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
+    <button id="btn-verify" onclick="showTab('verify')">Verify Patterns</button>
   </nav>
 </header>
 
@@ -129,17 +166,31 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
     <div id="stats-content"><div class="loading">Loading Bible facts…</div></div>
   </div>
 
+  <!-- VERIFY TAB -->
+  <div id="tab-verify" class="hidden">
+    <div style="height:16px"></div>
+    <div class="verify-header">
+      <div>
+        <div class="verify-title">Pattern Verification</div>
+        <div class="verify-sub">Counted from the KJV 1769 Blayney text (KJPBS bbl-kjv1769.ccdb) — the same source used by kjvcode.com and Pure Bible Search. Every number is computed live from the raw text; nothing is hardcoded.</div>
+      </div>
+      <button class="btn btn-brown btn-sm" onclick="runVerify(true)">Re-run ↺</button>
+    </div>
+    <div id="verify-content"><div class="loading">Loading…</div></div>
+  </div>
+
 </div>
 
 <script>
 let statsLoaded = false;
 
 function showTab(name) {
-  ['search','stats'].forEach(t => {
+  ['search','stats','verify'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
     document.getElementById('btn-'+t).classList.toggle('active', t === name);
   });
   if (name === 'stats' && !statsLoaded) loadStats();
+  if (name === 'verify' && !verifyLoaded) runVerify();
 }
 
 function hl(text, q) {
@@ -328,6 +379,106 @@ function renderStats(s) {
 }
 
 document.getElementById('q').focus();
+
+// ---- Verify tab ----
+let verifyLoaded = false;
+
+async function runVerify(force=false) {
+  if (verifyLoaded && !force) return;
+  document.getElementById('verify-content').innerHTML = '<div class="loading">Running pattern verification…</div>';
+  try {
+    const r = await fetch('/verify');
+    if (!r.ok) throw new Error('Verification failed');
+    const d = await r.json();
+    renderVerify(d);
+    verifyLoaded = true;
+  } catch(e) {
+    document.getElementById('verify-content').innerHTML = `<div class="err">${e.message}</div>`;
+  }
+}
+
+function renderVerify(d) {
+  let html = `<div style="font-size:.78rem;color:#aaa;margin-bottom:16px">
+    Source: <strong>${d.source}</strong>
+  </div>`;
+
+  const pass = d.patterns.filter(p=>p.pass).length;
+  const total = d.patterns.length;
+  const allPass = pass === total;
+  html += `<div style="margin-bottom:20px">
+    <span class="result-badge ${allPass?'badge-pass':'badge-fail'}">
+      ${allPass?'✓':'!'} ${pass} / ${total} patterns verified
+    </span>
+  </div>`;
+
+  for (const p of d.patterns) {
+    html += renderPattern(p);
+  }
+  document.getElementById('verify-content').innerHTML = html;
+}
+
+function renderPattern(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
+
+  // Build breakdown rows
+  let rows = '';
+  for (const t of p.breakdown) {
+    if (t.word === '__raw__') {
+      rows += `<tr>
+        <td>${t.label}</td>
+        <td class="col-forms"><span class="form-chip form-active">split on whitespace</span></td>
+        <td class="col-count">${fmt(t.count)}</td>
+      </tr>`;
+    } else {
+      const formChips = Object.entries(t.forms).map(([form, cnt]) => {
+        const active = (t.exact === null) || (form === t.exact);
+        return `<span class="form-chip${active?' form-active':''}">${escHtml(form)} = ${fmt(cnt)}</span>`;
+      }).join(' ');
+      const ruleLabel = t.exact !== null
+        ? `exact form <strong>${escHtml(t.exact)}</strong>`
+        : 'all forms (case-insensitive)';
+      rows += `<tr>
+        <td>${escHtml(t.label)}<br><span style="font-size:.75rem;color:#aaa">Rule: ${ruleLabel}</span></td>
+        <td class="col-forms">${formChips}</td>
+        <td class="col-count">${fmt(t.count)}</td>
+      </tr>`;
+    }
+  }
+
+  // Total row
+  const diff = p.actual - p.expected;
+  const diffStr = diff === 0 ? '' : ` <span style="color:#b00;font-size:.8rem">(${diff>0?'+':''}${fmt(diff)} vs expected)</span>`;
+  rows += `<tr class="total-row">
+    <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)}</td>
+    <td class="col-count">${fmt(p.actual)}${diffStr}</td>
+  </tr>`;
+
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <table class="breakdown-table">
+      <thead><tr>
+        <th>Word / Term</th>
+        <th>All forms in 1769 text</th>
+        <th style="text-align:right">Count</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 </script>
 </body>
 </html>

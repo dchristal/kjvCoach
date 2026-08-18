@@ -1,0 +1,125 @@
+[
+  {
+    "id": "raw-words-7pow7",
+    "label": "Total words = 7^7",
+    "url": "https://kjvcode.com/pattern/elton-anomaly/",
+    "note": "7 × 7 × 7 × 7 × 7 × 7 × 7 = 823,543",
+    "expected": 823543,
+    "terms": [
+      {
+        "label": "All whitespace-delimited tokens in the KJV concordance text",
+        "word": "__raw__",
+        "exact_form": null
+      }
+    ]
+  },
+  {
+    "id": "first-last-77777",
+    "label": "First & Last Words of First & Last Verses = 77,777",
+    "url": "https://kjvcode.com/pattern/first-last-words-first-last-verses-77777x/",
+    "note": "In (Gen 1:1 first) + earth (Gen 1:1 last) + The (Rev 22:21 first) + Amen (Rev 22:21 last)",
+    "expected": 77777,
+    "terms": [
+      {
+        "label": "\"In\" — first word of Genesis 1:1 (case-insensitive)",
+        "word": "in",
+        "exact_form": null
+      },
+      {
+        "label": "\"earth\" — last word of Genesis 1:1 (case-sensitive, lowercase only)",
+        "word": "earth",
+        "exact_form": "earth"
+      },
+      {
+        "label": "\"The\" — first word of Revelation 22:21 (case-insensitive)",
+        "word": "the",
+        "exact_form": null
+      },
+      {
+        "label": "\"Amen\" — last word of Revelation 22:21 (case-sensitive, capital A)",
+        "word": "amen",
+        "exact_form": "Amen"
+      }
+    ]
+  },
+  {
+    "id": "amen-77",
+    "label": "Amen = 77× (last word of the Bible)",
+    "url": "https://kjvcode.com/pattern/amen-77x-last-word-of-bible/",
+    "note": "Case-sensitive: capital 'Amen' only. One lowercase 'amen' in Num 5:22 is excluded.",
+    "expected": 77,
+    "terms": [
+      {
+        "label": "\"Amen\" (capital A, case-sensitive)",
+        "word": "amen",
+        "exact_form": "Amen"
+      }
+    ]
+  },
+  {
+    "id": "jesus-total",
+    "label": "Jesus — total occurrences (all forms)",
+    "url": "https://kjvcode.com/pattern/jesus-70x7/",
+    "note": "kjvcode.com claims 980 total (70×7). The 70×7 pattern itself is about 490 mentions in alternating NT books — a verse-level analysis not shown here. This row counts all forms in the 1769 CCDB text.",
+    "expected": 973,
+    "terms": [
+      {
+        "label": "\"Jesus\" (capital J, case-sensitive)",
+        "word": "jesus",
+        "exact_form": "Jesus"
+      },
+      {
+        "label": "\"JESUS\" (all caps, case-sensitive)",
+        "word": "jesus",
+        "exact_form": "JESUS"
+      }
+    ]
+  },
+  {
+    "id": "lord-all-caps",
+    "label": "LORD (all caps) total occurrences",
+    "url": "https://kjvcode.com/",
+    "note": "Case-sensitive: all-caps LORD only",
+    "expected": 6472,
+    "terms": [
+      {
+        "label": "\"LORD\" (all caps, case-sensitive)",
+        "word": "lord",
+        "exact_form": "LORD"
+      }
+    ]
+  },
+  {
+    "id": "god-jesus-7factorial",
+    "label": "God + Jesus = 7! = 5,040",
+    "url": "https://kjvcode.com/pattern/god-jesus-7-factorial/",
+    "note": "7 factorial = 7×6×5×4×3×2×1 = 5,040. Case-sensitive: 'God' and 'Jesus'. kjvcode.com uses Cambridge Concord text; the KJPBS 1769 CCDB gives 5,044 — a 4-count text version difference.",
+    "expected": 5040,
+    "terms": [
+      {
+        "label": "\"God\" (capital G, case-sensitive)",
+        "word": "god",
+        "exact_form": "God"
+      },
+      {
+        "label": "\"Jesus\" (capital J, case-sensitive)",
+        "word": "jesus",
+        "exact_form": "Jesus"
+      }
+    ]
+  },
+  {
+    "id": "christ-555",
+    "label": "Christ = 555×",
+    "url": "https://kjvcode.com/",
+    "note": "Case-sensitive: 'Christ' only",
+    "expected": 555,
+    "terms": [
+      {
+        "label": "\"Christ\" (case-sensitive)",
+        "word": "christ",
+        "exact_form": "Christ"
+      }
+    ]
+  }
+]
