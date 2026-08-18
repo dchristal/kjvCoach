@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "jesus_christ_777":
+        if ptype == "staircase_verses":
+            r = _verify_staircase_verses(p)
+        elif ptype == "jesus_christ_777":
             r = _verify_jesus_christ(p)
         elif ptype == "father_son":
             r = _verify_father_son(p, db)
@@ -453,6 +455,20 @@ def _verify_word_sum(p: dict, db) -> dict:
         breakdown.append({"label": label, "word": word, "exact": exact,
                           "forms": forms, "count": count})
     return {"breakdown": breakdown, "actual": total}
+
+
+def _verify_staircase_verses(p: dict) -> dict:
+    corpus  = _kjv_corpus()
+    total   = len(corpus)
+    stairs  = p["staircase"]
+    return {
+        "breakdown": [{
+            "total_verses": total,
+            "staircase":    stairs,
+            "staircase_sum": sum(stairs),
+        }],
+        "actual": total,
+    }
 
 
 def _verify_jesus_christ(p: dict) -> dict:

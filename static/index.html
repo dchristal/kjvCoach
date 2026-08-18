@@ -419,7 +419,52 @@ function renderPattern(p) {
   if (p.type === 'alternating_books') return renderAlternatingBooks(p);
   if (p.type === 'father_son')        return renderFatherSon(p);
   if (p.type === 'jesus_christ_777')  return renderJesusChrist(p);
+  if (p.type === 'staircase_verses')  return renderStaircase(p);
   return renderWordSum(p);
+}
+
+function renderStaircase(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
+  const b = p.breakdown[0];
+  const stairs = b.staircase;
+  const stairCells = stairs.map((n, i) => {
+    const isLast = i === stairs.length - 1;
+    return `<span style="display:inline-block;background:${isLast?'#d4edda':'#f0ece3'};
+      border:1px solid ${isLast?'#a3d4ae':'#ddd4c0'};border-radius:6px;
+      padding:6px 14px;font-size:1rem;font-weight:700;color:${isLast?'#1a5c2a':'#2c2416'}">
+      ${fmt(n)}
+    </span>`;
+  }).join(`<span style="font-size:1.2rem;padding:0 8px;color:#999">+</span>`);
+
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <div style="padding:18px 20px;border-top:1px solid #f0ece3">
+      <div style="margin-bottom:14px;font-size:.85rem;color:#666">
+        Total verses counted from KJV text:
+        <strong style="font-size:1.1rem;color:#2c2416;margin-left:6px">${fmt(b.total_verses)}</strong>
+      </div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:14px">
+        ${stairCells}
+        <span style="font-size:1.2rem;padding:0 8px;color:#999">=</span>
+        <span style="font-size:1.1rem;font-weight:700;color:#5a3e1b">${fmt(b.staircase_sum)}</span>
+      </div>
+      <div>
+        <span class="result-badge ${passClass}" style="padding:4px 12px">
+          ${p.pass ? '✓ Verse count matches staircase total' : '✗ Mismatch'}
+        </span>
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderJesusChrist(p) {

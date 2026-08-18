@@ -43,6 +43,15 @@
     ]
   },
   {
+    "id": "verses-staircase-7777",
+    "label": "Total Verses = 7,774 + 7,775 + 7,776 + 7,777 = 31,102",
+    "url": "https://kjvcode.com/pattern/total-verses-in-the-bible-staircase-7777/",
+    "note": "31,102 is the unique four-consecutive-integer staircase ending on 7,777",
+    "expected": 31102,
+    "type": "staircase_verses",
+    "staircase": [7774, 7775, 7776, 7777]
+  },
+  {
     "id": "jesus-christ-777x777",
     "label": "Jesus(*) + Christ(*) = 777 + 777 = 1,554",
     "url": "https://kjvcode.com/pattern/jesus-christ-777x/",
