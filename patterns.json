@@ -1,9 +1,9 @@
 [
   {
     "id": "raw-words-7pow7",
-    "label": "Total words = 7^7",
+    "label": "Total words = 7^7 = 823,543",
     "url": "https://kjvcode.com/pattern/elton-anomaly/",
-    "note": "7 × 7 × 7 × 7 × 7 × 7 × 7 = 823,543",
+    "note": "7 × 7 × 7 × 7 × 7 × 7 × 7",
     "expected": 823543,
     "terms": [
       {
@@ -26,7 +26,7 @@
         "exact_form": null
       },
       {
-        "label": "\"earth\" — last word of Genesis 1:1 (case-sensitive, lowercase only)",
+        "label": "\"earth\" — last word of Genesis 1:1 (exact lowercase only)",
         "word": "earth",
         "exact_form": "earth"
       },
@@ -36,89 +36,9 @@
         "exact_form": null
       },
       {
-        "label": "\"Amen\" — last word of Revelation 22:21 (case-sensitive, capital A)",
+        "label": "\"Amen\" — last word of Revelation 22:21 (exact capital-A only)",
         "word": "amen",
         "exact_form": "Amen"
-      }
-    ]
-  },
-  {
-    "id": "amen-77",
-    "label": "Amen = 77× (last word of the Bible)",
-    "url": "https://kjvcode.com/pattern/amen-77x-last-word-of-bible/",
-    "note": "Case-sensitive: capital 'Amen' only. One lowercase 'amen' in Num 5:22 is excluded.",
-    "expected": 77,
-    "terms": [
-      {
-        "label": "\"Amen\" (capital A, case-sensitive)",
-        "word": "amen",
-        "exact_form": "Amen"
-      }
-    ]
-  },
-  {
-    "id": "jesus-total",
-    "label": "Jesus — total occurrences (all forms)",
-    "url": "https://kjvcode.com/pattern/jesus-70x7/",
-    "note": "kjvcode.com claims 980 total (70×7). The 70×7 pattern itself is about 490 mentions in alternating NT books — a verse-level analysis not shown here. This row counts all forms in the 1769 CCDB text.",
-    "expected": 973,
-    "terms": [
-      {
-        "label": "\"Jesus\" (capital J, case-sensitive)",
-        "word": "jesus",
-        "exact_form": "Jesus"
-      },
-      {
-        "label": "\"JESUS\" (all caps, case-sensitive)",
-        "word": "jesus",
-        "exact_form": "JESUS"
-      }
-    ]
-  },
-  {
-    "id": "lord-all-caps",
-    "label": "LORD (all caps) total occurrences",
-    "url": "https://kjvcode.com/",
-    "note": "Case-sensitive: all-caps LORD only",
-    "expected": 6472,
-    "terms": [
-      {
-        "label": "\"LORD\" (all caps, case-sensitive)",
-        "word": "lord",
-        "exact_form": "LORD"
-      }
-    ]
-  },
-  {
-    "id": "god-jesus-7factorial",
-    "label": "God + Jesus = 7! = 5,040",
-    "url": "https://kjvcode.com/pattern/god-jesus-7-factorial/",
-    "note": "7 factorial = 7×6×5×4×3×2×1 = 5,040. Case-sensitive: 'God' and 'Jesus'. kjvcode.com uses Cambridge Concord text; the KJPBS 1769 CCDB gives 5,044 — a 4-count text version difference.",
-    "expected": 5040,
-    "terms": [
-      {
-        "label": "\"God\" (capital G, case-sensitive)",
-        "word": "god",
-        "exact_form": "God"
-      },
-      {
-        "label": "\"Jesus\" (capital J, case-sensitive)",
-        "word": "jesus",
-        "exact_form": "Jesus"
-      }
-    ]
-  },
-  {
-    "id": "christ-555",
-    "label": "Christ = 555×",
-    "url": "https://kjvcode.com/",
-    "note": "Case-sensitive: 'Christ' only",
-    "expected": 555,
-    "terms": [
-      {
-        "label": "\"Christ\" (case-sensitive)",
-        "word": "christ",
-        "exact_form": "Christ"
       }
     ]
   }

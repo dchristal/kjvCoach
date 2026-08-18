@@ -122,16 +122,16 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
   <h1>✝ kjvCoach</h1>
   <p>King James Bible — scripture only, no AI generation</p>
   <nav>
-    <button class="active" id="btn-search" onclick="showTab('search')">Search</button>
+    <button id="btn-search" onclick="showTab('search')">Search</button>
     <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
-    <button id="btn-verify" onclick="showTab('verify')">Verify Patterns</button>
+    <button class="active" id="btn-verify" onclick="showTab('verify')">Verify Patterns</button>
   </nav>
 </header>
 
 <div class="container">
 
   <!-- SEARCH TAB -->
-  <div id="tab-search">
+  <div id="tab-search" class="hidden">
     <div style="height:16px"></div>
 
     <div class="search-row">
@@ -167,7 +167,7 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
   </div>
 
   <!-- VERIFY TAB -->
-  <div id="tab-verify" class="hidden">
+  <div id="tab-verify">
     <div style="height:16px"></div>
     <div class="verify-header">
       <div>
@@ -378,7 +378,7 @@ function renderStats(s) {
   <div style="height:30px"></div>`;
 }
 
-document.getElementById('q').focus();
+runVerify();
 
 // ---- Verify tab ----
 let verifyLoaded = false;
