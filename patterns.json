@@ -56,6 +56,19 @@
     ]
   },
   {
+    "id": "jesus-inner-circle-1200",
+    "label": "Jesus + Peter + James + John = 1,200 (entire Bible)",
+    "url": "https://kjvcode.com/pattern/jesus-peter-james-john-1200/",
+    "note": "Jesus=980 (3 antimentions), Peter=162 (incl. PETER at 1 Pet 1:1), James=21 (21 antimentions incl. JAMES 1:1, James the Less, and Lord's brother), John=37 (96 antimentions: 83 Gospel Baptist + 13 outside). 1,200 = 12×100.",
+    "expected": 1200,
+    "type": "jesus_inner_circle_1200",
+    "jesus_antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45},
+      {"book": "Colossians", "chapter": 4,  "verse": 11},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
+    ]
+  },
+  {
     "id": "moses-aaron-1200",
     "label": "Moses(') + Aaron(*) = 1,200 (entire Bible)",
     "url": "https://kjvcode.com/pattern/moses-aaron-1200/",

@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "moses_aaron_1200":
+        if ptype == "jesus_inner_circle_1200":
+            r = _verify_inner_circle_1200(p, db)
+        elif ptype == "moses_aaron_1200":
             r = _verify_moses_aaron_1200(p)
         elif ptype == "fishermen_153":
             r = _verify_fishermen_153(p)
@@ -507,6 +509,89 @@ def _verify_four_names(p: dict, db) -> dict:
             for lbl, cnt, exp in components
         ],
         "actual": sum(cnt for _, cnt, _ in components),
+    }
+
+
+def _verify_inner_circle_1200(p: dict, db=None) -> dict:
+    corpus = _kjv_corpus()
+    if db is None:
+        db = _ccdb.load()
+
+    # Jesus pure (established 3 antimentions)
+    j_anti = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+    pat_J     = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+    jesus = sum(
+        len(pat_J.findall(t)) + len(pat_JESUS.findall(t))
+        for b, ch, v, t in corpus if (b, ch, v) not in j_anti
+    )
+
+    # Peter: case-insensitive (catches PETER at 1 Pet 1:1), no antimentions
+    pat_peter = re.compile(r"\bPeter\b", re.IGNORECASE)
+    peter = sum(len(pat_peter.findall(t)) for _, _, _, t in corpus)
+
+    # James: case-insensitive (catches JAMES at Jas 1:1)
+    # Per-verse antimentation subtraction (some verses have multiple James)
+    james_anti_count = {
+        # Gospels: James the Less (son of Alphaeus, 8×) + half-brother (2×)
+        ("Matthew", 10, 3): 1, ("Matthew", 13, 55): 1, ("Matthew", 27, 56): 1,
+        ("Mark", 3, 18): 1,   ("Mark", 6, 3): 1,      ("Mark", 15, 40): 1,
+        ("Mark", 16, 1): 1,   ("Luke", 6, 15): 1,      ("Luke", 6, 16): 1,
+        ("Luke", 24, 10): 1,
+        # Outside Gospels: Acts 1:13 has 1 apostle + 2 antimentions (James the Less + Judas's James)
+        ("Acts", 1, 13): 2,
+        ("Acts", 12, 17): 1, ("Acts", 15, 13): 1, ("Acts", 21, 18): 1,
+        ("1 Corinthians", 15, 7): 1,
+        ("Galatians", 1, 19): 1, ("Galatians", 2, 9): 1, ("Galatians", 2, 12): 1,
+        ("Jude", 1, 1): 1,
+        # JAMES all-caps at James 1:1 (Lord's brother, not apostle Zebedee)
+        ("James", 1, 1): 1,
+    }
+    pat_james = re.compile(r"\bJames\b", re.IGNORECASE)
+    james = 0
+    for b, ch, v, text in corpus:
+        hits = len(pat_james.findall(text))
+        if hits:
+            james += hits - james_anti_count.get((b, ch, v), 0)
+
+    # John: case-insensitive (catches JOHN at Rev 1:4)
+    # Whitelist of apostle John verses (all others = John the Baptist or John Mark)
+    john_apostle = {
+        # Gospels (20 verses)
+        ("Matthew", 4, 21), ("Matthew", 10, 2), ("Matthew", 17, 1),
+        ("Mark", 1, 19), ("Mark", 1, 29), ("Mark", 3, 17), ("Mark", 5, 37),
+        ("Mark", 9, 2), ("Mark", 9, 38), ("Mark", 10, 35), ("Mark", 10, 41),
+        ("Mark", 13, 3), ("Mark", 14, 33),
+        ("Luke", 5, 10), ("Luke", 6, 14), ("Luke", 8, 51),
+        ("Luke", 9, 28), ("Luke", 9, 49), ("Luke", 9, 54), ("Luke", 22, 8),
+        # Acts (11 verses)
+        # 4:6: "John" listed at the gathering for Peter & John's trial (apostle present as defendant)
+        # 13:5: "had also John to their minister" — the verse names only "John" without "Mark"
+        ("Acts", 1, 13), ("Acts", 3, 1), ("Acts", 3, 3), ("Acts", 3, 4),
+        ("Acts", 3, 11), ("Acts", 4, 6), ("Acts", 4, 13), ("Acts", 4, 19),
+        ("Acts", 8, 14), ("Acts", 12, 2), ("Acts", 13, 5),
+        # Galatians (1 verse — pillars of the church)
+        ("Galatians", 2, 9),
+        # Revelation (5 verses — author self-identifies)
+        ("Revelation", 1, 1), ("Revelation", 1, 4), ("Revelation", 1, 9),
+        ("Revelation", 21, 2), ("Revelation", 22, 8),
+    }
+    pat_john = re.compile(r"\bJohn\b", re.IGNORECASE)
+    john = sum(
+        len(pat_john.findall(t))
+        for b, ch, v, t in corpus if (b, ch, v) in john_apostle
+    )
+
+    components = [
+        ("Jesus (pure) — 3 antimentions excluded",                   jesus, 980),
+        ("Peter (incl. PETER at 1 Pet 1:1) — no antimentions",       peter, 162),
+        ("James (son of Zebedee) — 21 antimentions excl. incl. JAMES 1:1", james, 21),
+        ("John (son of Zebedee) — 96 Baptist/Mark antimentions excl.", john,  37),
+    ]
+    return {
+        "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
+                      for lbl, cnt, exp in components],
+        "actual": jesus + peter + james + john,
     }
 
 
