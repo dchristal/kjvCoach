@@ -40,7 +40,7 @@ def _build_verify_cache():
     for p in patterns:
         ptype = p.get("type", "word_sum")
         if ptype == "four_names_980x3":
-            r = _verify_four_names(p)
+            r = _verify_four_names(p, db)
         elif ptype == "jesus_god_7777":
             r = _verify_jesus_god_7777(p, db)
         elif ptype == "staircase_verses":
@@ -461,10 +461,10 @@ def _verify_word_sum(p: dict, db) -> dict:
     return {"breakdown": breakdown, "actual": total}
 
 
-def _verify_four_names(p: dict) -> dict:
+def _verify_four_names(p: dict, db) -> dict:
     corpus = _kjv_corpus()
 
-    # Jesus pure (same method as pattern 3)
+    # Jesus pure (corpus + antimentions logic)
     pat_Jmix  = re.compile(r"\bJesus'?")
     pat_JESUS = re.compile(r"\bJESUS\b")
     j_anti    = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
@@ -473,21 +473,24 @@ def _verify_four_names(p: dict) -> dict:
         for b, ch, v, t in corpus if (b, ch, v) not in j_anti
     )
 
-    # Christ('s), David('s), Abraham('s) — possessives use curly apostrophes,
-    # so \bName\b already captures Name and Name's (curly quote is non-word char)
-    def count_name(name):
-        pat = re.compile(r"\b" + name + r"\b")
-        return sum(len(pat.findall(t)) for _, _, _, t in corpus)
+    # Christ('s): corpus regex matches base + curly-apostrophe possessives
+    pat_christ = re.compile(r"\bChrist\b")
+    christ = sum(len(pat_christ.findall(t)) for _, _, _, t in corpus)
 
-    christ   = count_name("Christ")
-    david    = count_name("David")
-    abraham  = count_name("Abraham")
+    # David('s) and Abraham('s): use CCDB exact counts (base + possessive).
+    # The concordance file is 1 David short of the 1769 CCDB text.
+    # CCDB stores possessives with curly apostrophe (U+2019) as the key.
+    curly = "’"
+    david   = (db.word_count("david",            exact_form="David")
+             + sum(db.word_forms("david"  + curly + "s").values()))
+    abraham = (db.word_count("abraham",          exact_form="Abraham")
+             + sum(db.word_forms("abraham" + curly + "s").values()))
 
     components = [
         ("Jesus / JESUS (pure, 3 antimentions excluded)", jesus,   980),
-        ("Christ('s)",                                    christ,  571),
-        ("David('s)",                                     david,   1139),
-        ("Abraham('s)",                                   abraham, 250),
+        ("Christ('s)  — corpus",                          christ,  571),
+        ("David('s)   — CCDB 1769 text",                  david,   1139),
+        ("Abraham('s) — CCDB 1769 text",                  abraham, 250),
     ]
 
     return {
