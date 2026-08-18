@@ -43,6 +43,27 @@
     ]
   },
   {
+    "id": "father-son-70x7",
+    "label": "Father + Son = 70×7 = 490 (entire Bible)",
+    "url": "https://kjvcode.com/pattern/father-and-son-70x7/",
+    "note": "Capital-F Father (259 = 37×7) + capital-S Son (231 = 33×7). Possessives and antimentions excluded.",
+    "expected": 490,
+    "type": "father_son",
+    "expected_father": 259,
+    "expected_son": 231,
+    "father_antimentions": [
+      {"book": "Luke", "chapter": 16, "verse": 24, "note": "Father Abraham — not God the Father"}
+    ],
+    "son_antimentions": [
+      {"book": "Ezekiel", "chapter": null, "verse": null, "note": "All 61 'Son of man' addresses to Ezekiel"},
+      {"book": "Matthew", "chapter": 9,  "verse": 2,    "note": "Jesus addressing the paralytic"},
+      {"book": "Matthew", "chapter": 21, "verse": 28,   "note": "Parable — father to son"},
+      {"book": "Mark",    "chapter": 2,  "verse": 5,    "note": "Jesus addressing the paralytic"},
+      {"book": "Luke",    "chapter": 15, "verse": 31,   "note": "Parable — father to son"},
+      {"book": "Luke",    "chapter": 16, "verse": 25,   "note": "Abraham to rich man in parable"}
+    ]
+  },
+  {
     "id": "jesus-70x7",
     "label": "Jesus = 70×7 in Every Other NT Book (980 total)",
     "url": "https://kjvcode.com/pattern/jesus-70x7/",

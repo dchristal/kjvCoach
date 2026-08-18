@@ -414,6 +414,59 @@ def _verify_word_sum(p: dict, db) -> dict:
     return {"breakdown": breakdown, "actual": total}
 
 
+def _verify_father_son(p: dict, db) -> dict:
+    corpus = _kjv_corpus()
+
+    # Father: use CCDB capital-F count, subtract specific antimentions
+    father_ccdb  = db.word_count("father", exact_form="Father")
+    father_anti  = p.get("father_antimentions", [])
+    father_count = father_ccdb - len(father_anti)
+
+    # Son: use corpus capital-S count, subtract Ezekiel + specific verse antimentions
+    pat_S = re.compile(r"\bSon\b")
+    son_verse_anti = {
+        (a["book"], a["chapter"], a["verse"])
+        for a in p.get("son_antimentions", [])
+        if a["chapter"] is not None
+    }
+    son_count = 0
+    for b, ch, v, text in corpus:
+        hits = len(pat_S.findall(text))
+        if hits == 0:
+            continue
+        if b == "Ezekiel":
+            continue  # all antimentions
+        if (b, ch, v) in son_verse_anti:
+            continue
+        son_count += hits
+
+    actual = father_count + son_count
+    return {
+        "breakdown": [
+            {
+                "label":      "Father (capital F, entire Bible)",
+                "word":       "Father",
+                "ccdb_count": father_ccdb,
+                "antimentions": [{"ref": f"{a['book']} {a['chapter']}:{a['verse']}", "note": a["note"]}
+                                 for a in father_anti],
+                "count":      father_count,
+            },
+            {
+                "label":      "Son (capital S, entire Bible)",
+                "word":       "Son",
+                "ccdb_count": 297,
+                "antimentions": [
+                    {"ref": "Ezekiel (all 61)", "note": "Son of man — God addressing Ezekiel"},
+                    *[{"ref": f"{a['book']} {a['chapter']}:{a['verse']}", "note": a["note"]}
+                      for a in p.get("son_antimentions", []) if a["chapter"] is not None],
+                ],
+                "count": son_count,
+            },
+        ],
+        "actual": actual,
+    }
+
+
 def _verify_alternating_books(p: dict) -> dict:
     corpus = _kjv_corpus()
     term = p["term"]
@@ -472,7 +525,9 @@ def verify():
 
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "alternating_books":
+        if ptype == "father_son":
+            r = _verify_father_son(p, db)
+        elif ptype == "alternating_books":
             r = _verify_alternating_books(p)
         else:
             r = _verify_word_sum(p, db)
