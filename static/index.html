@@ -378,8 +378,6 @@ function renderStats(s) {
   <div style="height:30px"></div>`;
 }
 
-runVerify();
-
 // ---- Verify tab ----
 let verifyLoaded = false;
 
@@ -621,6 +619,8 @@ function renderWordSum(p) {
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+runVerify();
 </script>
 </body>
 </html>
