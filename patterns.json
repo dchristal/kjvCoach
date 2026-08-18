@@ -56,6 +56,14 @@
     ]
   },
   {
+    "id": "moses-aaron-1200",
+    "label": "Moses(') + Aaron(*) = 1,200 (entire Bible)",
+    "url": "https://kjvcode.com/pattern/moses-aaron-1200/",
+    "note": "Moses(')=848 (base+possessives), Aaron(*)=352 (base+Aaron's+Aaronites in 1 Chr 12:27 & 27:17). 1,200 reflects 12 tribes they led. No antimentions.",
+    "expected": 1200,
+    "type": "moses_aaron_1200"
+  },
+  {
     "id": "fishermen-153",
     "label": "Five Fishermen (John 21:2) = 153× in the Gospels",
     "url": "https://kjvcode.com/pattern/153-fishes/",

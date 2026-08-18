@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "fishermen_153":
+        if ptype == "moses_aaron_1200":
+            r = _verify_moses_aaron_1200(p)
+        elif ptype == "fishermen_153":
             r = _verify_fishermen_153(p)
         elif ptype == "jesus_elijah":
             r = _verify_jesus_elijah(p)
@@ -505,6 +507,27 @@ def _verify_four_names(p: dict, db) -> dict:
             for lbl, cnt, exp in components
         ],
         "actual": sum(cnt for _, cnt, _ in components),
+    }
+
+
+def _verify_moses_aaron_1200(p: dict) -> dict:
+    corpus = _kjv_corpus()
+    # Moses: \bMoses\b also captures Moses' (curly apostrophe is non-word boundary)
+    pat_moses = re.compile(r"\bMoses\b")
+    # Aaron*: base + Aaron's (possessive, curly) + Aaronites (1 Chr 12:27, 27:17)
+    pat_aaron = re.compile(r"\bAaron(?:ites?)?\b")
+
+    moses = sum(len(pat_moses.findall(t)) for _, _, _, t in corpus)
+    aaron = sum(len(pat_aaron.findall(t)) for _, _, _, t in corpus)
+
+    components = [
+        ("Moses(') — entire Bible incl. possessives",              moses, 848),
+        ("Aaron(*) — entire Bible incl. Aaron's + Aaronites",      aaron, 352),
+    ]
+    return {
+        "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
+                      for lbl, cnt, exp in components],
+        "actual": moses + aaron,
     }
 
 
