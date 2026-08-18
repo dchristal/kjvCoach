@@ -23,6 +23,45 @@ PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+_verify_cache: dict | None = None
+
+@app.on_event("startup")
+async def _precompute():
+    """Pre-compute all pattern verifications at startup so /verify is instant."""
+    import asyncio
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, _build_verify_cache)
+
+def _build_verify_cache():
+    global _verify_cache
+    db       = _ccdb.load()
+    patterns = json.loads(PATTERNS_PATH.read_text())
+    results  = []
+    for p in patterns:
+        ptype = p.get("type", "word_sum")
+        if ptype == "father_son":
+            r = _verify_father_son(p, db)
+        elif ptype == "alternating_books":
+            r = _verify_alternating_books(p)
+        else:
+            r = _verify_word_sum(p, db)
+        expected = p["expected"]
+        results.append({
+            "id":       p["id"],
+            "label":    p["label"],
+            "url":      p.get("url", ""),
+            "note":     p.get("note", ""),
+            "type":     ptype,
+            "expected": expected,
+            "actual":   r["actual"],
+            "pass":     r["actual"] == expected,
+            **{k: v for k, v in r.items() if k != "actual"},
+        })
+    _verify_cache = {
+        "source":   "KJV 1769 Blayney concordance text + KJPBS bbl-kjv1769.ccdb",
+        "patterns": results,
+    }
+
 
 # ---------------------------------------------------------------------------
 # DB helpers
@@ -517,38 +556,11 @@ def _verify_alternating_books(p: dict) -> dict:
 
 @app.get("/verify")
 def verify():
-    """Run every pattern in patterns.json against the KJV text and return results."""
+    """Return pre-computed pattern verification results (computed at startup)."""
     _require_db()
-    db = _ccdb.load()
-    patterns = json.loads(PATTERNS_PATH.read_text())
-    results  = []
-
-    for p in patterns:
-        ptype = p.get("type", "word_sum")
-        if ptype == "father_son":
-            r = _verify_father_son(p, db)
-        elif ptype == "alternating_books":
-            r = _verify_alternating_books(p)
-        else:
-            r = _verify_word_sum(p, db)
-
-        expected = p["expected"]
-        results.append({
-            "id":       p["id"],
-            "label":    p["label"],
-            "url":      p.get("url", ""),
-            "note":     p.get("note", ""),
-            "type":     ptype,
-            "expected": expected,
-            "actual":   r["actual"],
-            "pass":     r["actual"] == expected,
-            **{k: v for k, v in r.items() if k not in ("actual",)},
-        })
-
-    return {
-        "source":   "KJV 1769 Blayney concordance text + KJPBS bbl-kjv1769.ccdb",
-        "patterns": results,
-    }
+    if _verify_cache is None:
+        _build_verify_cache()
+    return _verify_cache
 
 
 if __name__ == "__main__":
