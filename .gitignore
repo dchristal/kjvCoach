@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+kjv.db
+kjv.txt
+*.deb
+Holy-Bible-King-James-Version-Entire-Bible-Concord.txt

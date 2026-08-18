@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>kjvCoach</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Georgia,serif;background:#f8f5ef;color:#2c2416;min-height:100vh}
+
+header{background:#1e1a12;color:#e8dfc8;padding:16px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{font-size:1.45rem;letter-spacing:.05em;white-space:nowrap}
+header p{font-size:.8rem;opacity:.6;flex:1;font-style:italic}
+nav{display:flex;gap:6px;margin-left:auto}
+nav button{background:transparent;border:1px solid rgba(232,223,200,.35);color:#e8dfc8;
+  padding:6px 16px;border-radius:4px;cursor:pointer;font-family:Georgia,serif;font-size:.85rem;
+  transition:background .15s}
+nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color:rgba(232,223,200,.7)}
+
+.container{max-width:860px;margin:0 auto;padding:20px 16px}
+
+/* ---- Search tab ---- */
+.search-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.search-row input[type=text]{flex:1;min-width:200px;padding:10px 14px;font-size:1rem;
+  font-family:Georgia,serif;border:1px solid #c8b99a;border-radius:6px;background:#fff}
+.search-row select{padding:10px 8px;border:1px solid #c8b99a;border-radius:6px;
+  background:#fff;font-family:Georgia,serif;font-size:.9rem;color:#2c2416}
+.btn{padding:10px 20px;border:none;border-radius:6px;cursor:pointer;
+  font-family:Georgia,serif;font-size:.95rem;transition:background .15s}
+.btn-brown{background:#5a3e1b;color:#fff}.btn-brown:hover{background:#7a5a2b}
+.btn-green{background:#3a5a3a;color:#fff}.btn-green:hover{background:#4a7a4a}
+.btn-sm{padding:6px 14px;font-size:.85rem}
+
+.ref-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
+.ref-row input{flex:1;min-width:160px;padding:8px 12px;font-family:Georgia,serif;
+  border:1px solid #c8b99a;border-radius:6px;background:#fff;font-size:.9rem}
+.ref-hint{font-size:.78rem;color:#999;white-space:nowrap}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;min-height:24px}
+.status{font-size:.88rem;color:#888;font-style:italic}
+
+.results{display:flex;flex-direction:column;gap:10px}
+.verse-card{background:#fff;border:1px solid #ddd4c0;border-radius:8px;padding:15px 18px}
+.vref{font-size:.75rem;font-weight:700;color:#7a5a2b;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.vtext{font-size:1.05rem;line-height:1.7}
+.vtext em{background:#fff9c4;font-style:normal;border-radius:2px;padding:0 1px}
+
+/* ---- Stats tab ---- */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:#fff;border:1px solid #ddd4c0;border-radius:8px;padding:13px 15px;text-align:center}
+.stat-val{font-size:1.55rem;font-weight:700;color:#5a3e1b}
+.stat-lbl{font-size:.72rem;color:#999;margin-top:3px;letter-spacing:.03em;text-transform:uppercase}
+
+.sec{font-size:.9rem;font-weight:700;color:#5a3e1b;margin:20px 0 8px;
+  padding-bottom:5px;border-bottom:2px solid #e8dfc8;letter-spacing:.04em;text-transform:uppercase}
+.fact-table{background:#fff;border:1px solid #ddd4c0;border-radius:8px;overflow:hidden}
+.fact-row{display:flex;justify-content:space-between;padding:9px 15px;
+  border-bottom:1px solid #f0ece3;font-size:.88rem;gap:12px}
+.fact-row:last-child{border-bottom:none}
+.fact-row .fval{font-weight:700;color:#5a3e1b;text-align:right;white-space:nowrap}
+.fact-row .fnote{font-size:.75rem;color:#aaa;margin-top:2px}
+
+.vblock{background:#fff;border-left:4px solid #5a3e1b;border-radius:0 8px 8px 0;
+  padding:12px 16px;margin:6px 0}
+.vblock .vblref{font-size:.76rem;color:#999;margin-bottom:4px}
+.vblock .vbltxt{font-size:.95rem;line-height:1.6}
+.vblock .vblnote{font-size:.75rem;color:#bbb;margin-top:3px}
+
+.tag-cloud{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tag{background:#f0ece3;border:1px solid #ddd4c0;border-radius:4px;padding:3px 9px;font-size:.82rem}
+.tag strong{color:#5a3e1b;margin-left:3px}
+
+.badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:.72rem;
+  font-weight:700;letter-spacing:.04em;vertical-align:middle;margin-left:6px}
+.badge-yes{background:#d4edda;color:#2a6b3a}
+.badge-no{background:#f8d7da;color:#842029}
+
+.hidden{display:none}
+.loading{text-align:center;padding:50px;color:#aaa;font-style:italic}
+.err{color:#b00;padding:10px 14px;background:#fff0f0;border-radius:6px;font-size:.88rem;margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✝ kjvCoach</h1>
+  <p>King James Bible — scripture only, no AI generation</p>
+  <nav>
+    <button class="active" id="btn-search" onclick="showTab('search')">Search</button>
+    <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
+  </nav>
+</header>
+
+<div class="container">
+
+  <!-- SEARCH TAB -->
+  <div id="tab-search">
+    <div style="height:16px"></div>
+
+    <div class="search-row">
+      <input id="q" type="text" placeholder="Search scripture… e.g. peace that passeth understanding"
+             onkeydown="if(event.key==='Enter')doSearch()">
+      <select id="testament">
+        <option value="">Whole Bible</option>
+        <option value="OT">Old Testament</option>
+        <option value="NT">New Testament</option>
+      </select>
+      <button class="btn btn-brown" onclick="doSearch()">Search</button>
+    </div>
+
+    <div class="ref-row">
+      <input id="ref" type="text" placeholder="John 3:16  or  Psalms 23"
+             onkeydown="if(event.key==='Enter')doRef()">
+      <button class="btn btn-green" onclick="doRef()">Look up</button>
+      <span class="ref-hint">Book chapter:verse — or chapter only for whole chapter</span>
+    </div>
+
+    <div class="toolbar">
+      <span class="status" id="status"></span>
+      <button class="btn btn-brown btn-sm" onclick="doRandom()">Random verse ↻</button>
+    </div>
+
+    <div class="results" id="results"></div>
+  </div>
+
+  <!-- STATS TAB -->
+  <div id="tab-stats" class="hidden">
+    <div style="height:16px"></div>
+    <div id="stats-content"><div class="loading">Loading Bible facts…</div></div>
+  </div>
+
+</div>
+
+<script>
+let statsLoaded = false;
+
+function showTab(name) {
+  ['search','stats'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
+    document.getElementById('btn-'+t).classList.toggle('active', t === name);
+  });
+  if (name === 'stats' && !statsLoaded) loadStats();
+}
+
+function hl(text, q) {
+  if (!q) return text;
+  const words = q.trim().split(/\s+/).filter(Boolean);
+  let out = text;
+  words.forEach(w => {
+    const rx = new RegExp(`(${w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    out = out.replace(rx, '<em>$1</em>');
+  });
+  return out;
+}
+
+function card(v, q='') {
+  return `<div class="verse-card">
+    <div class="vref">${v.ref}</div>
+    <div class="vtext">${hl(v.text, q)}</div>
+  </div>`;
+}
+
+async function doSearch() {
+  const q = document.getElementById('q').value.trim();
+  if (!q) return;
+  const t = document.getElementById('testament').value;
+  const url = `/search?q=${encodeURIComponent(q)}&limit=30`+(t?`&testament=${t}`:'');
+  setStatus('Searching…'); setResults('');
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error((await r.json()).detail);
+    const d = await r.json();
+    setStatus(d.count ? `${d.count} verse${d.count!==1?'s':''} found` : 'No verses found.');
+    setResults(d.verses.map(v=>card(v,q)).join(''));
+  } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
+}
+
+async function doRef() {
+  const raw = document.getElementById('ref').value.trim();
+  if (!raw) return;
+  const m = raw.match(/^(.+?)\s+(\d+)(?::(\d+))?$/);
+  if (!m) { setStatus('Format: Book chapter:verse'); return; }
+  const [,book,ch,v] = m;
+  const url = v ? `/verse/${enc(book)}/${ch}/${v}` : `/chapter/${enc(book)}/${ch}`;
+  setStatus('Looking up…'); setResults('');
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error((await r.json()).detail);
+    const d = await r.json();
+    if (d.verses) {
+      setStatus(`${d.book} ${d.chapter} — ${d.verse_count} verses`);
+      setResults(d.verses.map(vv=>card(vv)).join(''));
+    } else {
+      setStatus(d.ref);
+      setResults(card(d));
+    }
+  } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
+}
+
+async function doRandom() {
+  const t = document.getElementById('testament').value;
+  try {
+    const r = await fetch('/random'+(t?`?testament=${t}`:''));
+    const v = await r.json();
+    setStatus('Random verse'); setResults(card(v));
+  } catch(e) {}
+}
+
+function setStatus(s){ document.getElementById('status').textContent = s; }
+function setResults(h){ document.getElementById('results').innerHTML = h; }
+function enc(s){ return encodeURIComponent(s); }
+function fmt(n){ return Number(n).toLocaleString(); }
+
+async function loadStats() {
+  try {
+    const r = await fetch('/stats');
+    if (!r.ok) throw new Error('Stats unavailable');
+    renderStats(await r.json());
+    statsLoaded = true;
+  } catch(e) {
+    document.getElementById('stats-content').innerHTML = `<div class="err">${e.message}</div>`;
+  }
+}
+
+function renderStats(s) {
+  const t = s.totals;
+  const kp = s.kjvcode_patterns;
+
+  document.getElementById('stats-content').innerHTML = `
+
+  <div class="stat-grid">
+    <div class="stat-card"><div class="stat-val">66</div><div class="stat-lbl">Books</div></div>
+    <div class="stat-card"><div class="stat-val">${fmt(t.chapters)}</div><div class="stat-lbl">Chapters</div></div>
+    <div class="stat-card"><div class="stat-val">${fmt(t.verses)}</div><div class="stat-lbl">Verses</div></div>
+    <div class="stat-card"><div class="stat-val">${fmt(t.words)}</div><div class="stat-lbl">Words</div></div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-val">${fmt(t.OT.verses)}</div>
+      <div class="stat-lbl">OT Verses<br><span style="font-size:.78rem;color:#bbb">${fmt(t.OT.words)} words</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">${fmt(t.NT.verses)}</div>
+      <div class="stat-lbl">NT Verses<br><span style="font-size:.78rem;color:#bbb">${fmt(t.NT.words)} words</span></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val">${t.OT_NT_word_ratio}</div>
+      <div class="stat-lbl">OT÷NT Word Ratio<br><span style="font-size:.78rem;color:#bbb">kjvcode.com: 77%</span></div>
+    </div>
+  </div>
+
+  <div class="sec">Book Records</div>
+  <div class="fact-table">
+    <div class="fact-row"><span>Longest book (most verses)</span><span class="fval">${s.longest_book.name} — ${fmt(s.longest_book.verses)} verses</span></div>
+    <div class="fact-row"><span>Shortest book (fewest verses)</span><span class="fval">${s.shortest_book.name} — ${s.shortest_book.verses} verses</span></div>
+    <div class="fact-row"><span>Most chapters</span><span class="fval">${s.most_chapters.name} — ${s.most_chapters.chapters} chapters</span></div>
+  </div>
+
+  <div class="sec">Verse Records</div>
+  <div class="vblock">
+    <div class="vblref">Longest verse — ${s.longest_verse.ref} (${s.longest_verse.words} words)</div>
+    <div class="vbltxt">${s.longest_verse.text}</div>
+  </div>
+  <div class="vblock">
+    <div class="vblref">Shortest verse — ${s.shortest_verse.ref} (${s.shortest_verse.words} word${s.shortest_verse.words!==1?'s':''})</div>
+    <div class="vbltxt">${s.shortest_verse.text}</div>
+  </div>
+  <div class="vblock">
+    <div class="vblref">Middle verse — ${s.middle_verse.ref} <span style="color:#ccc">(${s.middle_verse.note})</span></div>
+    <div class="vbltxt">${s.middle_verse.text}</div>
+  </div>
+
+  <div class="sec">kjvcode.com Patterns <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(computed from source text)</span></div>
+  <div class="fact-table">
+    <div class="fact-row">
+      <span>"Jesus" appears in exactly 70×7 (490) verses
+        <span class="badge ${kp.jesus_70x7?'badge-yes':'badge-no'}">${kp.jesus_70x7?'✓ VERIFIED':'✗ NOT 490'}</span>
+      </span>
+      <span class="fval">${fmt(kp.jesus_in_verses)} verses</span>
+    </div>
+    <div class="fact-row"><span>"LORD" (all caps) occurrences</span><span class="fval">${fmt(kp.LORD_all_caps)}</span></div>
+    <div class="fact-row"><span>"God" occurrences</span><span class="fval">${fmt(kp.god_in_verses)}</span></div>
+    <div class="fact-row"><span>"Christ" occurrences</span><span class="fval">${fmt(kp.christ_in_verses)}</span></div>
+    <div class="fact-row">
+      <span>Verses containing Lord / God / Jesus / Christ (combined)</span>
+      <span class="fval">${fmt(kp.lord_god_jesus_christ_combined)}</span>
+    </div>
+    <div class="fact-row">
+      <span>Verses ending in punctuation
+        <span style="font-size:.78rem;color:#aaa">(kjvcode.com: 77%)</span>
+      </span>
+      <span class="fval">${fmt(kp.verses_ending_punct)} <span style="font-weight:400;color:#aaa">(${kp.punct_end_pct}%)</span></span>
+    </div>
+    <div class="fact-row">
+      <span>Verses with no ending punctuation
+        <span class="badge ${kp.verses_no_ending_punct<=10?'badge-yes':'badge-no'}">${kp.verses_no_ending_punct} found</span>
+      </span>
+      <span class="fval">${kp.verses_no_punct_list.join(', ')||'none'}</span>
+    </div>
+    <div class="fact-row"><span>OT÷NT word ratio</span><span class="fval">${kp.OT_NT_ratio||t.OT_NT_word_ratio}</span></div>
+  </div>
+
+  <div class="sec">Keyword Occurrences <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(verses containing word)</span></div>
+  <div class="fact-table">
+    ${Object.entries(s.keyword_counts).map(([k,v])=>`
+      <div class="fact-row">
+        <span>${k.charAt(0).toUpperCase()+k.slice(1)}</span>
+        <span class="fval">${fmt(v)}</span>
+      </div>`).join('')}
+  </div>
+
+  <div class="sec">Most Common Words <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(stop words excluded)</span></div>
+  <div class="tag-cloud">
+    ${s.top_words.map(w=>`<div class="tag">${w.word}<strong>${fmt(w.count)}</strong></div>`).join('')}
+  </div>
+
+  <div class="sec">Top 10 Books by Verse Count</div>
+  <div class="fact-table">
+    ${s.top_books_by_verses.map((b,i)=>`
+      <div class="fact-row">
+        <span>${i+1}. ${b.name}</span>
+        <span class="fval">${fmt(b.verses)}</span>
+      </div>`).join('')}
+  </div>
+
+  <div style="height:30px"></div>`;
+}
+
+document.getElementById('q').focus();
+</script>
+</body>
+</html>
