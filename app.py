@@ -39,7 +39,9 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "father_son":
+        if ptype == "jesus_christ_777":
+            r = _verify_jesus_christ(p)
+        elif ptype == "father_son":
             r = _verify_father_son(p, db)
         elif ptype == "alternating_books":
             r = _verify_alternating_books(p)
@@ -451,6 +453,44 @@ def _verify_word_sum(p: dict, db) -> dict:
         breakdown.append({"label": label, "word": word, "exact": exact,
                           "forms": forms, "count": count})
     return {"breakdown": breakdown, "actual": total}
+
+
+def _verify_jesus_christ(p: dict) -> dict:
+    corpus = _kjv_corpus()
+    pat_Jmix  = re.compile(r"\bJesus'?")
+    pat_JESUS = re.compile(r"\bJESUS\b")
+    pat_C     = re.compile(r"\bChrist(?:s|'s|ian(?:s)?)?\b")
+
+    j_anti = {(a["book"], a["chapter"], a["verse"]) for a in p["jesus_antimentions"]}
+    c_anti = {(a["book"], a["chapter"], a["verse"]) for a in p["christ_antimentions"]}
+
+    j_raw = j_pure = c_raw = c_pure = 0
+    for b, ch, v, text in corpus:
+        jh  = len(pat_Jmix.findall(text)) + len(pat_JESUS.findall(text))
+        ch_ = len(pat_C.findall(text))
+        j_raw += jh;  c_raw += ch_
+        if (b, ch, v) not in j_anti: j_pure += jh
+        if (b, ch, v) not in c_anti: c_pure += ch_
+
+    return {
+        "breakdown": [
+            {
+                "label":       "Jesus(*) — Jesus, Jesus', JESUS",
+                "raw_count":   j_raw,
+                "antimentions": [{"ref": f"{a['book']} {a['chapter']}:{a['verse']}", "note": a["note"]}
+                                 for a in p["jesus_antimentions"]],
+                "count":       j_pure,
+            },
+            {
+                "label":       "Christ(*) — Christ, Christs, Christ's, Christian, Christians",
+                "raw_count":   c_raw,
+                "antimentions": [{"ref": f"{a['book']} {a['chapter']}:{a['verse']}", "note": a["note"]}
+                                 for a in p["christ_antimentions"]],
+                "count":       c_pure,
+            },
+        ],
+        "actual": j_pure + c_pure,
+    }
 
 
 def _verify_father_son(p: dict, db) -> dict:

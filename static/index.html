@@ -418,7 +418,61 @@ function renderVerify(d) {
 function renderPattern(p) {
   if (p.type === 'alternating_books') return renderAlternatingBooks(p);
   if (p.type === 'father_son')        return renderFatherSon(p);
+  if (p.type === 'jesus_christ_777')  return renderJesusChrist(p);
   return renderWordSum(p);
+}
+
+function renderJesusChrist(p) {
+  const passClass = p.pass ? 'badge-pass' : 'badge-fail';
+  const passIcon  = p.pass ? '✓' : '✗';
+
+  let termRows = '';
+  const targets = [p.expected_jesus, p.expected_christ];
+  p.breakdown.forEach((t, i) => {
+    const tPass = t.count === targets[i] ? 'badge-pass' : 'badge-fail';
+    const antiList = t.antimentions.map(a =>
+      `<div style="font-size:.77rem;color:#888;margin-top:2px">
+         <span class="form-chip">${escHtml(a.ref)}</span> ${escHtml(a.note)}
+       </div>`).join('');
+    termRows += `<tr>
+      <td style="padding:9px 14px;vertical-align:top">
+        <strong>${escHtml(t.label)}</strong>${antiList}
+      </td>
+      <td style="padding:9px 14px;text-align:right;vertical-align:top">
+        <span style="font-size:.8rem;color:#999">raw: ${fmt(t.raw_count)} − ${t.antimentions.length} antimentation${t.antimentions.length!==1?'s':''}</span>
+      </td>
+      <td style="padding:9px 14px;text-align:right;vertical-align:top;font-weight:700;font-size:1rem">
+        <span class="result-badge ${tPass}" style="padding:2px 8px">${fmt(t.count)}</span>
+      </td>
+    </tr>`;
+  });
+
+  return `<div class="pattern-card">
+    <div class="pattern-head">
+      <div>
+        <div class="pattern-title">${escHtml(p.label)}</div>
+        ${p.note ? `<div class="pattern-note">${escHtml(p.note)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
+      </div>
+    </div>
+    <table class="breakdown-table">
+      <thead><tr>
+        <th>Word / Antimentions excluded</th>
+        <th style="text-align:right">Raw count</th>
+        <th style="text-align:right">Pure count</th>
+      </tr></thead>
+      <tbody>
+        ${termRows}
+        <tr class="total-row">
+          <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)} = 777 + 777</td>
+          <td class="col-count">${fmt(p.actual)}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>`;
 }
 
 function renderFatherSon(p) {

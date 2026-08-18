@@ -43,6 +43,25 @@
     ]
   },
   {
+    "id": "jesus-christ-777x777",
+    "label": "Jesus(*) + Christ(*) = 777 + 777 = 1,554",
+    "url": "https://kjvcode.com/pattern/jesus-christ-777x/",
+    "note": "Jesus(*) = Jesus + Jesus' + JESUS (all caps). Christ(*) = Christ + Christs + Christ's + Christian + Christians. 3 Jesus antimentions + 2 false-Christ antimentions excluded.",
+    "expected": 1554,
+    "type": "jesus_christ_777",
+    "expected_jesus": 980,
+    "expected_christ": 574,
+    "jesus_antimentions": [
+      {"book": "Acts",       "chapter": 7,  "verse": 45, "note": "Refers to Joshua, not Jesus Christ"},
+      {"book": "Hebrews",    "chapter": 4,  "verse": 8,  "note": "Refers to Joshua, not Jesus Christ"},
+      {"book": "Colossians", "chapter": 4,  "verse": 11, "note": "Jesus called Justus — different person"}
+    ],
+    "christ_antimentions": [
+      {"book": "Matthew", "chapter": 24, "verse": 24, "note": "False Christs"},
+      {"book": "Mark",    "chapter": 13, "verse": 22, "note": "False Christs"}
+    ]
+  },
+  {
     "id": "father-son-70x7",
     "label": "Father + Son = 70×7 = 490 (entire Bible)",
     "url": "https://kjvcode.com/pattern/father-and-son-70x7/",
