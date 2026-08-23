@@ -16,6 +16,9 @@ nav button{background:transparent;border:1px solid rgba(232,223,200,.35);color:#
   padding:6px 16px;border-radius:4px;cursor:pointer;font-family:Georgia,serif;font-size:.85rem;
   transition:background .15s}
 nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color:rgba(232,223,200,.7)}
+nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);color:#e8dfc8;
+  padding:6px 16px;border-radius:4px;text-decoration:none;font-family:Georgia,serif;font-size:.85rem;
+  letter-spacing:.08em}
 
 .container{max-width:860px;margin:0 auto;padding:20px 16px}
 
@@ -114,6 +117,31 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
 .badge-fail{background:#f8d7da;color:#842029}
 .pattern-result{display:flex;align-items:center;gap:10px;padding:10px 14px;
   background:#f8f5ef;font-size:.82rem;color:#666}
+
+/* ---- Chat tab ---- */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 140px);min-height:400px}
+.chat-messages{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;
+  padding:16px 4px;scroll-behavior:smooth}
+.chat-bubble{max-width:82%;padding:11px 15px;border-radius:12px;font-size:.97rem;
+  line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.chat-bubble.user{align-self:flex-end;background:#5a3e1b;color:#f8f5ef;
+  border-bottom-right-radius:4px}
+.chat-bubble.assistant{align-self:flex-start;background:#fff;border:1px solid #ddd4c0;
+  border-bottom-left-radius:4px;color:#2c2416}
+.chat-bubble.error{align-self:flex-start;background:#fff0f0;border:1px solid #f5c6c6;
+  color:#b00;border-bottom-left-radius:4px}
+.chat-tool{align-self:flex-start;font-family:monospace;font-size:.75rem;
+  color:#999;padding:3px 6px;background:#f8f5ef;border-radius:4px}
+.chat-thinking{align-self:flex-start;color:#bbb;font-style:italic;font-size:.9rem;padding:4px 0}
+.chat-footer{display:flex;gap:8px;padding-top:12px;border-top:1px solid #ddd4c0}
+.chat-footer textarea{flex:1;resize:none;padding:10px 14px;font-size:.97rem;
+  font-family:Georgia,serif;border:1px solid #c8b99a;border-radius:6px;
+  background:#fff;line-height:1.5;height:48px;overflow:hidden}
+.chat-footer textarea:focus{outline:none;border-color:#7a5a2b;height:80px}
+.chat-meta{display:flex;justify-content:space-between;align-items:center;
+  padding:6px 0 0;font-size:.78rem;color:#bbb}
+.chat-meta a{color:#bbb;cursor:pointer;text-decoration:none}
+.chat-meta a:hover{color:#7a5a2b}
 </style>
 </head>
 <body>
@@ -125,6 +153,8 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
     <button id="btn-search" onclick="showTab('search')">Search</button>
     <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
     <button class="active" id="btn-verify" onclick="showTab('verify')">Verify Patterns</button>
+    <button id="btn-chat" onclick="showTab('chat')">Chat</button>
+    <a href="/153" class="public-door">153</a>
   </nav>
 </header>
 
@@ -179,17 +209,38 @@ nav button.active,nav button:hover{background:rgba(232,223,200,.15);border-color
     <div id="verify-content"><div class="loading">Loading…</div></div>
   </div>
 
+  <!-- CHAT TAB -->
+  <div id="tab-chat" class="hidden">
+    <div style="height:12px"></div>
+    <div class="chat-wrap">
+      <div id="chat-messages" class="chat-messages">
+        <div class="chat-bubble assistant">Ask anything about the KJV — word counts, verse lookups, scripture on any topic. Answers come from your local LLM grounded in the King James text.</div>
+      </div>
+      <div class="chat-footer">
+        <textarea id="chat-input" placeholder="Ask a question…"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+          oninput="this.style.height='48px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button class="btn btn-brown" onclick="sendChat()">Send</button>
+      </div>
+      <div class="chat-meta">
+        <span id="chat-model-lbl"></span>
+        <a onclick="resetChat()">New conversation</a>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
 let statsLoaded = false;
 
 function showTab(name) {
-  ['search','stats','verify'].forEach(t => {
+  ['search','stats','verify','chat'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
-    document.getElementById('btn-'+t).classList.toggle('active', t === name);
+    const btn = document.getElementById('btn-'+t);
+    if (btn) btn.classList.toggle('active', t === name);
   });
-  if (name === 'stats' && !statsLoaded) loadStats();
+  if (name === 'stats'  && !statsLoaded)  loadStats();
   if (name === 'verify' && !verifyLoaded) runVerify();
 }
 
@@ -552,6 +603,11 @@ function renderFishermen153(p) {
     <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
     <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}</td>
   </tr>`).join('');
+  const tri = p.triangle || {n:17, series:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], sum:153};
+  const cubes = p.digit_cubes || {digits:[1,5,3], cubes:[1,125,27], sum:153};
+  const catchV = p.verses && p.verses.catch;
+  const series = tri.series.join(' + ');
+  const cubeBits = cubes.digits.map((d,i) => `${d}³=${fmt(cubes.cubes[i])}`).join(' + ');
   return `<div class="pattern-card">
     <div class="pattern-head">
       <div>
@@ -560,8 +616,17 @@ function renderFishermen153(p) {
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
         <span class="result-badge ${passClass}">${passIcon} ${p.pass?'VERIFIED':'MISMATCH'}</span>
+        <a class="pattern-link" href="/153">public page ↗</a>
         ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
       </div>
+    </div>
+    ${catchV && catchV.text ? `<div class="vblock" style="margin:12px 16px 0">
+      <div class="vblref">${escHtml(catchV.ref)}</div>
+      <div class="vbltxt">${escHtml(catchV.text)}</div>
+    </div>` : ''}
+    <div style="padding:12px 16px 4px;font-size:.85rem;color:#555;line-height:1.6">
+      <div><strong>17th triangular number</strong> — ${series} = <strong>${fmt(tri.sum)}</strong></div>
+      <div style="margin-top:4px"><strong>Digit cubes</strong> — ${cubeBits} = <strong>${fmt(cubes.sum)}</strong></div>
     </div>
     <table class="breakdown-table">
       <thead><tr>
@@ -570,7 +635,7 @@ function renderFishermen153(p) {
       <tbody>
         ${rows}
         <tr class="total-row">
-          <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)} (John 21:11)</td>
+          <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)} (John 21:11 · T<sub>17</sub>)</td>
           <td class="col-count">${fmt(p.actual)}</td>
         </tr>
       </tbody>
@@ -981,6 +1046,124 @@ function renderWordSum(p) {
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---------------------------------------------------------------------------
+// Chat tab — daveLLM web interface
+// ---------------------------------------------------------------------------
+let chatHistory = [];
+
+function _chatScroll() {
+  const el = document.getElementById('chat-messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function _appendBubble(cls, text) {
+  const el = document.getElementById('chat-messages');
+  const b = document.createElement('div');
+  b.className = 'chat-bubble ' + cls;
+  b.textContent = text;
+  el.appendChild(b);
+  _chatScroll();
+  return b;
+}
+
+function _appendTool(name, result) {
+  const el = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = 'chat-tool';
+  const occ = result && result.occurrences !== undefined ? ` → ${result.occurrences.toLocaleString()}` : '';
+  const ref = result && result.ref ? ` → ${result.ref}` : '';
+  d.textContent = `· ${name}(${occ || ref || '…'})`;
+  el.appendChild(d);
+  _chatScroll();
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chat-input');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  inp.style.height = '48px';
+
+  chatHistory.push({role: 'user', content: text});
+  _appendBubble('user', text);
+
+  const thinking = document.createElement('div');
+  thinking.className = 'chat-thinking';
+  thinking.textContent = 'thinking…';
+  document.getElementById('chat-messages').appendChild(thinking);
+  _chatScroll();
+
+  let assistantBubble = null;
+  let assistantText = '';
+
+  try {
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({messages: chatHistory}),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, {stream: true});
+      const parts = buf.split('\n\n');
+      buf = parts.pop();
+      for (const part of parts) {
+        const line = part.replace(/^data: /, '');
+        if (line === '[DONE]') break;
+        let evt;
+        try { evt = JSON.parse(line); } catch { continue; }
+
+        if (evt.error) {
+          thinking.remove();
+          _appendBubble('error', '⚠ ' + evt.error);
+          return;
+        }
+        if (evt.tool) {
+          thinking.remove();
+          _appendTool(evt.tool, evt.result);
+          // re-add thinking after tool annotation
+          document.getElementById('chat-messages').appendChild(thinking);
+          _chatScroll();
+          continue;
+        }
+        if (evt.token) {
+          if (!assistantBubble) {
+            thinking.remove();
+            assistantBubble = document.createElement('div');
+            assistantBubble.className = 'chat-bubble assistant';
+            document.getElementById('chat-messages').appendChild(assistantBubble);
+          }
+          assistantText += evt.token;
+          assistantBubble.textContent = assistantText;
+          _chatScroll();
+        }
+      }
+    }
+  } catch (e) {
+    thinking.remove();
+    _appendBubble('error', '⚠ Could not reach the LLM server. Is LM Studio running at localhost:1234?');
+    return;
+  }
+
+  thinking.remove();
+  if (assistantText) {
+    chatHistory.push({role: 'assistant', content: assistantText});
+  }
+}
+
+function resetChat() {
+  chatHistory = [];
+  const el = document.getElementById('chat-messages');
+  el.innerHTML = '<div class="chat-bubble assistant">Ask anything about the KJV — word counts, verse lookups, scripture on any topic. Answers come from your local LLM grounded in the King James text.</div>';
 }
 
 runVerify();

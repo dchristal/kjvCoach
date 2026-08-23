@@ -9,15 +9,29 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+import asyncio
+
 import ccdb as _ccdb
 import kjvcode as _kjv
+from chat import SYSTEM_PROMPT, KJV_TOOLS, _dispatch_tool
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from openai import OpenAI as _OpenAI
 
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
 STATIC_DIR    = os.path.join(BASE_DIR, "static")
+
+# ---------------------------------------------------------------------------
+# LLM client (daveLLM — connects to LM Studio or any OpenAI-compatible server)
+# ---------------------------------------------------------------------------
+_LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:1234/v1")
+_LLM_MODEL    = os.environ.get("LLM_MODEL",    "google/gemma-4-e4b")
+_llm          = _OpenAI(
+    base_url=_LLM_BASE_URL,
+    api_key=os.environ.get("LLM_API_KEY", "lm-studio"),
+)
 PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
@@ -115,6 +129,123 @@ def _verse_dict(row) -> Dict[str, Any]:
 def root():
     _require_db()
     return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+@app.get("/lab")
+def lab():
+    """The verification workbench — kept for counting, not for strangers."""
+    _require_db()
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+
+@app.get("/153")
+def public_153():
+    """Public campaign door — one pattern, starting from John 21 and the math."""
+    return FileResponse(os.path.join(STATIC_DIR, "153.html"))
+
+
+@app.get("/api/153")
+def api_153():
+    """Live fishermen-153 payload for the public page. Computed on its own so
+    the door does not wait for the full /verify cache."""
+    _require_db()
+    patterns = json.loads(PATTERNS_PATH.read_text())
+    spec = next((p for p in patterns if p.get("id") == "fishermen-153"), None)
+    if spec is None:
+        raise HTTPException(404, "fishermen-153 pattern not found")
+    r = _verify_fishermen_153(spec)
+    expected = spec["expected"]
+    actual = r["actual"]
+    return {
+        "id":       spec["id"],
+        "label":    spec["label"],
+        "url":      spec.get("url", ""),
+        "note":     spec.get("note", ""),
+        "expected": expected,
+        "actual":   actual,
+        "pass":     actual == expected,
+        "source":   "KJV 1769 Blayney concordance text (Cambridge Concord)",
+        **{k: v for k, v in r.items() if k != "actual"},
+    }
+
+
+@app.post("/api/chat")
+async def api_chat(payload: dict):
+    """Stream a KJV-grounded LLM response as SSE.
+
+    Body: {"messages": [{"role": "user|assistant", "content": "..."}]}
+    Events: {"token": str} | {"tool": str, "result": dict} | {"error": str} | [DONE]
+    """
+    user_messages = payload.get("messages", [])
+    _KJV_PATH = Path(BASE_DIR) / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+
+    async def _stream():
+        turn = [{"role": "system", "content": SYSTEM_PROMPT}] + [
+            {"role": m["role"], "content": m["content"]}
+            for m in user_messages
+            if m.get("role") in ("user", "assistant") and m.get("content")
+        ]
+        try:
+            # Tool-calling loop (non-streaming)
+            for _ in range(4):
+                resp = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda t=turn: _llm.chat.completions.create(
+                        model=_LLM_MODEL, messages=t,
+                        tools=KJV_TOOLS, tool_choice="auto", stream=False,
+                    ),
+                )
+                msg = resp.choices[0].message
+                calls = getattr(msg, "tool_calls", None) or []
+                if not calls:
+                    break
+                turn.append({
+                    "role": "assistant",
+                    "content": msg.content or "",
+                    "tool_calls": [
+                        {"id": tc.id, "type": "function",
+                         "function": {"name": tc.function.name,
+                                      "arguments": tc.function.arguments}}
+                        for tc in calls
+                    ],
+                })
+                for tc in calls:
+                    try:
+                        args = json.loads(tc.function.arguments or "{}")
+                    except json.JSONDecodeError:
+                        args = {}
+                    result = _dispatch_tool(tc.function.name, args,
+                                            Path("/nonexistent"), _KJV_PATH)
+                    yield f"data: {json.dumps({'tool': tc.function.name, 'result': result})}\n\n"
+                    turn.append({
+                        "role": "tool",
+                        "tool_call_id": tc.id,
+                        "content": json.dumps(result),
+                    })
+
+            # Stream the final text response
+            stream = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: _llm.chat.completions.create(
+                    model=_LLM_MODEL, messages=turn, stream=True,
+                ),
+            )
+            for ev in stream:
+                delta = ev.choices[0].delta.content or ""
+                if delta:
+                    yield f"data: {json.dumps({'token': delta})}\n\n"
+
+        except Exception as exc:
+            msg = str(exc)
+            if "Connection" in msg or "connect" in msg.lower():
+                msg = f"Cannot reach LLM server at {_LLM_BASE_URL}. Is LM Studio running with a model loaded?"
+            yield f"data: {json.dumps({'error': msg})}\n\n"
+
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(_stream(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "X-Accel-Buffering": "no"})
 
 
 @app.get("/health")
@@ -616,6 +747,13 @@ def _verify_moses_aaron_1200(p: dict) -> dict:
     }
 
 
+def _verse_from_corpus(corpus, book: str, chapter: int, verse: int) -> str:
+    for b, ch, v, text in corpus:
+        if b == book and ch == chapter and v == verse:
+            return text
+    return ""
+
+
 def _verify_fishermen_153(p: dict) -> dict:
     corpus  = _kjv_corpus()
     GOSPELS = {"Matthew", "Mark", "Luke", "John"}
@@ -651,10 +789,50 @@ def _verify_fishermen_153(p: dict) -> dict:
         ("James (son of Zebedee) — 10 antimentions excluded",                 james,     19),
         ("John (son of Zebedee) — 83 John the Baptist verses excluded",        john,      20),
     ]
+    triangle_n = int(p.get("triangle_n", 17))
+    series = list(range(1, triangle_n + 1))
     return {
         "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
                       for lbl, cnt, exp in components],
         "actual": peter + thomas + nathanael + james + john,
+        "crew": [
+            {"name": "Peter",     "in_boat_as": "Simon Peter",          "count": peter,     "expected": 97},
+            {"name": "Thomas",    "in_boat_as": "Thomas called Didymus","count": thomas,    "expected": 11},
+            {"name": "Nathanael", "in_boat_as": "Nathanael of Cana",    "count": nathanael, "expected": 6},
+            {"name": "James",     "in_boat_as": "the sons of Zebedee",  "count": james,     "expected": 19},
+            {"name": "John",      "in_boat_as": "the sons of Zebedee",  "count": john,      "expected": 20},
+        ],
+        "verses": {
+            "crew": {
+                "ref":  "John 21:2",
+                "text": _verse_from_corpus(corpus, "John", 21, 2),
+            },
+            "catch": {
+                "ref":  "John 21:11",
+                "text": _verse_from_corpus(corpus, "John", 21, 11),
+            },
+        },
+        "triangle": {
+            "n":      triangle_n,
+            "series": series,
+            "sum":    triangle_n * (triangle_n + 1) // 2,
+            "formula": "n(n+1)/2",
+        },
+        "digit_cubes": {
+            "digits": [1, 5, 3],
+            "cubes":  [1, 125, 27],
+            "sum":    1 + 125 + 27,
+        },
+        "scope": "Gospels only (Matthew, Mark, Luke, John)",
+        "rules": [
+            "Count only the four Gospels — the catch is a Gospel story.",
+            "The five names are the men John identifies in the boat: Simon Peter, Thomas, Nathanael, and the two sons of Zebedee.",
+            "John 21:2 says “the sons of Zebedee,” not “James and John.” Matthew 4:21 and Mark 1:19 name those sons.",
+            "Two other disciples are in the boat and unnamed. They are not counted — there is no name to count.",
+            "Peter includes the possessive Peter’s. Thomas and Nathanael have no exclusions.",
+            "James drops 10 Gospel verses that name James the Less (son of Alphaeus) or James the Lord’s brother.",
+            "John counts only 20 verses where the name is the apostle, not John the Baptist.",
+        ],
     }
 
 
