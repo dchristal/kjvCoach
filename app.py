@@ -150,26 +150,75 @@ def public_153():
 
 @app.get("/api/153")
 def api_153():
-    """Live fishermen-153 payload for the public page. Computed on its own so
-    the door does not wait for the full /verify cache."""
+    """Full payload for the 153 public page — crew counts, verses, triangle, rules."""
     _require_db()
     patterns = json.loads(PATTERNS_PATH.read_text())
     spec = next((p for p in patterns if p.get("id") == "fishermen-153"), None)
     if spec is None:
         raise HTTPException(404, "fishermen-153 pattern not found")
     r = _verify_fishermen_153(spec)
-    expected = spec["expected"]
     actual = r["actual"]
+
+    # Map breakdown rows → crew display (order matches _verify_fishermen_153 components)
+    _crew_meta = [
+        ("Peter",     "Simon Peter"),
+        ("Thomas",    "Thomas called Didymus"),
+        ("Nathanael", "Nathanael of Cana in Galilee"),
+        ("James",     "the sons of Zebedee"),
+        ("John",      "the sons of Zebedee"),
+    ]
+    crew = [
+        {"name": name, "in_boat_as": alias, "count": bd["count"]}
+        for (name, alias), bd in zip(_crew_meta, r["breakdown"])
+    ]
+
+    # Fetch John 21:11 (the catch) and John 21:2 (the crew verse) from the DB
+    conn = _db()
+    def _v(book, ch, v):
+        row = conn.execute("""
+            SELECT b.name, v.chapter, v.verse, v.text
+            FROM verses v JOIN books b ON b.id = v.book_id
+            WHERE lower(b.name) = lower(?) AND v.chapter = ? AND v.verse = ?
+        """, (book, ch, v)).fetchone()
+        return {"text": row["text"], "ref": f"{row['name']} {ch}:{v}"} if row else None
+    verses = {k: vv for k, vv in
+              {"catch": _v("John", 21, 11), "crew": _v("John", 21, 2)}.items()
+              if vv}
+    conn.close()
+
+    # Triangular number
+    n = spec.get("triangle_n", 17)
+    triangle = {"n": n, "series": list(range(1, n + 1)), "sum": n * (n + 1) // 2}
+
+    # Digit cubes: 1³ + 5³ + 3³ = 153
+    digits = [1, 5, 3]
+    cubes  = [d ** 3 for d in digits]
+    digit_cubes = {"digits": digits, "cubes": cubes, "sum": sum(cubes)}
+
+    rules = [
+        "Scope: Matthew, Mark, Luke, and John — the four Gospels only.",
+        "Peter counts 'Peter' and 'Peter’s'. No other biblical figure shares this name; no exclusions.",
+        "Thomas counts 'Thomas' only. No exclusions.",
+        "Nathanael counts 'Nathanael' only. No exclusions.",
+        "James counts only James son of Zebedee. Excluded: James the Less / son of Alphaeus (8×) and James the Lord's brother (2×).",
+        "John counts only the 20 verses where 'John' refers to the apostle son of Zebedee. "
+        "Excluded: all 83 mentions of John the Baptist, and every 'John' in the Gospel of John "
+        "(the apostle never names himself in his own Gospel).",
+    ]
+
     return {
-        "id":       spec["id"],
-        "label":    spec["label"],
-        "url":      spec.get("url", ""),
-        "note":     spec.get("note", ""),
-        "expected": expected,
-        "actual":   actual,
-        "pass":     actual == expected,
-        "source":   "KJV 1769 Blayney concordance text (Cambridge Concord)",
-        **{k: v for k, v in r.items() if k != "actual"},
+        "id":          spec["id"],
+        "label":       spec["label"],
+        "url":         spec.get("url", ""),
+        "expected":    spec["expected"],
+        "actual":      actual,
+        "pass":        actual == spec["expected"],
+        "source":      "KJV 1769 Blayney concordance text (Cambridge Concord)",
+        "crew":        crew,
+        "verses":      verses,
+        "triangle":    triangle,
+        "digit_cubes": digit_cubes,
+        "rules":       rules,
     }
 
 
