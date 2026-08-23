@@ -440,6 +440,11 @@ async function runVerify(force=false) {
     const r = await fetch('/verify');
     if (!r.ok) throw new Error('Verification failed');
     const d = await r.json();
+    if (d.status === 'warming') {
+      document.getElementById('verify-content').innerHTML = '<div class="loading">Warming up — patterns computing in background…</div>';
+      setTimeout(() => runVerify(force), 2000);
+      return;
+    }
     renderVerify(d);
     verifyLoaded = true;
   } catch(e) {

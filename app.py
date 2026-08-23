@@ -47,10 +47,8 @@ _verify_cache: dict | None = None
 
 @app.on_event("startup")
 async def _precompute():
-    """Pre-compute all pattern verifications at startup so /verify is instant."""
-    import asyncio
-    loop = asyncio.get_event_loop()
-    await loop.run_in_executor(None, _build_verify_cache)
+    """Kick off pattern pre-compute in the background; server accepts requests immediately."""
+    asyncio.get_event_loop().run_in_executor(None, _build_verify_cache)
 
 def _build_verify_cache():
     global _verify_cache
@@ -1130,10 +1128,10 @@ def _verify_alternating_books(p: dict) -> dict:
 
 @app.get("/verify")
 def verify():
-    """Return pre-computed pattern verification results (computed at startup)."""
+    """Return pre-computed pattern results, or a warming status if still computing."""
     _require_db()
     if _verify_cache is None:
-        _build_verify_cache()
+        return {"status": "warming", "patterns": []}
     return _verify_cache
 
 
