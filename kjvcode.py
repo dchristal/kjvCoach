@@ -22,7 +22,7 @@ import re
 from pathlib import Path
 
 _DIR = Path(__file__).resolve().parent
-DEFAULT_KJV_TEXT = _DIR / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+DEFAULT_KJV_TEXT = _DIR / "kjv.txt"
 DEFAULT_KJV_OSIS = _DIR / "kjv1769.osis.xml"
 DEFAULT_PATTERNS = _DIR / "patterns.json"
 

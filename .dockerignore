@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 *.deb
 .env
+.git
+cursor.deb

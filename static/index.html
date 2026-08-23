@@ -242,6 +242,7 @@ function showTab(name) {
   });
   if (name === 'stats'  && !statsLoaded)  loadStats();
   if (name === 'verify' && !verifyLoaded) runVerify();
+  if (name === 'chat')                    _loadChatInfo();
 }
 
 function hl(text, q) {
@@ -1052,6 +1053,18 @@ function escHtml(s) {
 // Chat tab — daveLLM web interface
 // ---------------------------------------------------------------------------
 let chatHistory = [];
+
+async function _loadChatInfo() {
+  try {
+    const r = await fetch('/api/chat/info');
+    if (!r.ok) return;
+    const d = await r.json();
+    const lbl = document.getElementById('chat-model-lbl');
+    if (lbl) lbl.textContent = d.backend === 'groq'
+      ? `Groq · ${d.model}`
+      : `Local · ${d.model}`;
+  } catch {}
+}
 
 function _chatScroll() {
   const el = document.getElementById('chat-messages');

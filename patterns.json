@@ -80,8 +80,9 @@
     "id": "fishermen-153",
     "label": "Five Fishermen (John 21:2) = 153× in the Gospels",
     "url": "https://kjvcode.com/pattern/153-fishes/",
-    "note": "Peter(97)+Thomas(11)+Nathanael(6)+James(19)+John(20)=153. James excludes James the Less (8×) and half-brother of Jesus (2×). John uses a whitelist of 20 apostle-John verses; all other Gospel 'John' mentions = John the Baptist (83 excluded).",
+    "note": "John 21:11 numbers the catch at 153. 153 is the 17th triangular number (1+2+…+17) and 1³+5³+3³. The five men named in that boat — Peter, Thomas, Nathanael, and the sons of Zebedee (James, John) — are named 153 times in the Gospels. James excludes James the Less (8×) and the Lord's brother (2×). John counts 20 apostle verses only.",
     "expected": 153,
+    "triangle_n": 17,
     "type": "fishermen_153",
     "james_antimentions": [
       {"book": "Matthew", "chapter": 10, "verse": 3,  "note": "James the son of Alphaeus (James the Less)"},

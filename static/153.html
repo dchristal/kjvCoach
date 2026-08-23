@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>153 — the number in the net</title>
+<meta name="description" content="John 21 numbers the catch at 153. 153 is 1+2+…+17. The five men in that boat are named 153 times in the Gospels. Count it yourself.">
+<style>
+  :root {
+    --ink: #d7e4ee;
+    --muted: #8aa0b0;
+    --dim: #5c7384;
+    --water: #071018;
+    --deep: #0b1822;
+    --line: rgba(180, 210, 230, 0.12);
+    --lantern: #e6d2a2;
+    --foam: #9fd0c8;
+    --fail: #e07a7a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Iowan Old Style", Palatino, "Palatino Linotype", Georgia, serif;
+    background: var(--water);
+    color: var(--ink);
+    min-height: 100vh;
+    line-height: 1.55;
+  }
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(900px 420px at 50% -8%, rgba(80, 140, 160, 0.16), transparent 70%),
+      radial-gradient(700px 280px at 80% 110%, rgba(40, 80, 90, 0.18), transparent 70%);
+  }
+  a { color: var(--foam); }
+  .wrap { position: relative; max-width: 720px; margin: 0 auto; padding: 0 22px 80px; }
+
+  header.top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 22px 0 8px; font-size: 0.78rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  header.top a { color: var(--dim); text-decoration: none; }
+  header.top a:hover { color: var(--ink); }
+
+  .hero { padding: 48px 0 28px; text-align: center; }
+  .kicker {
+    font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase;
+    color: var(--foam); margin-bottom: 18px;
+  }
+  .big {
+    font-family: "IBM Plex Mono", "Cascadia Code", "Source Code Pro", ui-monospace, monospace;
+    font-size: clamp(6.2rem, 22vw, 10rem);
+    font-weight: 500; line-height: 0.85; letter-spacing: -0.04em;
+    color: #f4fbff;
+  }
+  .sub {
+    margin-top: 18px; color: var(--muted); font-size: 1.15rem; font-style: italic;
+  }
+
+  .verse {
+    margin: 18px 0 48px;
+    padding: 22px 24px 20px;
+    border-left: 2px solid var(--lantern);
+    background: rgba(230, 210, 162, 0.04);
+  }
+  .verse p { font-size: 1.18rem; line-height: 1.7; color: #e9eef2; }
+  .verse cite {
+    display: block; margin-top: 10px; font-size: 0.78rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--lantern); font-style: normal;
+  }
+
+  h2 {
+    font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--foam); font-weight: 600; margin: 42px 0 14px;
+  }
+  p.lead { color: var(--ink); font-size: 1.05rem; }
+  p.note { color: var(--muted); margin-top: 10px; font-size: 0.95rem; }
+
+  .triangle {
+    margin: 22px 0 8px;
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+  }
+  .trow { display: flex; gap: 5px; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #7eb8c4;
+    box-shadow: 0 0 6px rgba(126, 184, 196, 0.35);
+    opacity: 0; transform: scale(0.4);
+    animation: pop 0.35s ease forwards;
+  }
+  @keyframes pop { to { opacity: 1; transform: scale(1); } }
+  .sumline {
+    font-family: ui-monospace, "Cascadia Code", monospace;
+    color: var(--muted); font-size: 0.82rem; text-align: center;
+    margin-top: 14px; line-height: 1.7;
+  }
+  .sumline strong { color: var(--ink); font-size: 1.05rem; }
+
+  .crew { margin-top: 8px; }
+  .man {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .man:first-child { border-top: 1px solid var(--line); }
+  .man .name { font-size: 1.12rem; }
+  .man .as { font-size: 0.8rem; color: var(--dim); font-style: italic; }
+  .man .n {
+    font-family: ui-monospace, monospace; font-size: 1.35rem;
+    align-self: center; color: #f4fbff;
+  }
+  .total {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 16px 0 4px; font-size: 1.05rem;
+  }
+  .total .n {
+    font-family: ui-monospace, monospace; font-size: 1.8rem; color: var(--foam);
+  }
+  .badge {
+    display: inline-block; margin-left: 10px; font-size: 0.68rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 999px; vertical-align: middle;
+  }
+  .ok { background: rgba(159, 208, 200, 0.15); color: var(--foam); }
+  .no { background: rgba(224, 122, 122, 0.15); color: var(--fail); }
+
+  ol.rules, ul.steel {
+    margin: 8px 0 0 1.15rem; color: var(--muted); font-size: 0.98rem;
+  }
+  ol.rules li, ul.steel li { margin: 8px 0; padding-left: 4px; }
+  ul.steel { list-style: disc; }
+
+  .chapter { margin-top: 8px; }
+  .cv {
+    display: grid; grid-template-columns: 2.2rem 1fr; gap: 10px;
+    margin: 0 0 8px; font-size: 1.02rem;
+  }
+  .cv .vn { color: var(--dim); font-size: 0.78rem; padding-top: 5px; font-family: ui-monospace, monospace; }
+  .more {
+    display: inline-block; margin-top: 18px; padding: 10px 16px;
+    border: 1px solid var(--line); color: var(--ink); text-decoration: none;
+    font-size: 0.88rem; letter-spacing: 0.04em;
+  }
+  .more:hover { border-color: var(--foam); }
+
+  details.script {
+    margin-top: 48px; border-top: 1px solid var(--line); padding-top: 16px;
+    color: var(--dim); font-size: 0.92rem;
+  }
+  details.script summary { cursor: pointer; color: var(--muted); }
+  details.script p { margin-top: 10px; max-width: 40em; }
+
+  footer {
+    margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 0.78rem; letter-spacing: 0.04em;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  }
+  footer a { color: var(--dim); }
+
+  .err { color: var(--fail); margin-top: 12px; }
+  .loading { color: var(--dim); font-style: italic; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <span>The number in the net</span>
+      <a href="/lab">the counts</a>
+    </header>
+
+    <section class="hero">
+      <div class="kicker">John 21</div>
+      <div class="big" id="big">153</div>
+      <p class="sub">The book numbers the catch. Then it numbers the men.</p>
+    </section>
+
+    <figure class="verse">
+      <p id="catch-text">Simon Peter went up, and drew the net to land full of great fishes, an hundred and fifty and three: and for all there were so many, yet was not the net broken.</p>
+      <cite id="catch-ref">John 21:11</cite>
+    </figure>
+
+    <h2>Anyone can add this</h2>
+    <p class="lead">153 is the 17th triangular number. You do not need a Bible, or faith, to check it.</p>
+    <div class="triangle" id="triangle" aria-hidden="true"></div>
+    <p class="sumline" id="sumline"></p>
+    <p class="note">Augustine already wrote about this triangle in the catch. The arithmetic is public knowledge. What follows is not.</p>
+
+    <h2>The five men in that boat</h2>
+    <figure class="verse">
+      <p id="crew-text">There were together Simon Peter, and Thomas called Didymus, and Nathanael of Cana in Galilee, and the sons of Zebedee, and two other of his disciples.</p>
+      <cite id="crew-ref">John 21:2</cite>
+    </figure>
+    <p class="lead">Those five names — Peter, Thomas, Nathanael, James, John — occur this many times in Matthew, Mark, Luke, and John:</p>
+    <div class="crew" id="crew"><p class="loading">Counting from the text…</p></div>
+
+    <h2>The rule, in English</h2>
+    <p class="note">If you can change the rule after you see the number, the number is not evidence. These are the rules used here.</p>
+    <ol class="rules" id="rules"></ol>
+
+    <h2>How this could be nothing</h2>
+    <ul class="steel">
+      <li>John may have written 153 because it is a famous triangular number, and for no other reason.</li>
+      <li>The verse says “sons of Zebedee,” not “James and John.” That identification comes from earlier Gospels.</li>
+      <li>Two disciples in the boat are unnamed. They are left out because they have no name to count — that is a choice.</li>
+      <li>James and John are filtered by person: James the Less and John the Baptist do not count. A different identity rule moves the total.</li>
+      <li>The scope is the four Gospels, not the whole Bible. Widen the scope and the number changes.</li>
+      <li>Large books contain many named groups. Some of those groups will land on a number that already appears in the story.</li>
+    </ul>
+    <p class="note">The claim is only this: under the rules above, the live count from this text is 153. You can reject the rules. You should not have to take the arithmetic on trust.</p>
+
+    <h2>Read the chapter</h2>
+    <p class="note">The next step is not another number. It is the night they caught nothing, and then they did.</p>
+    <div class="chapter" id="chapter"><p class="loading">Loading John 21…</p></div>
+    <a class="more" href="/lab">See every count we have checked</a>
+
+    <details class="script">
+      <summary>30-second version — if you want to say this out loud</summary>
+      <p>
+        John 21 says they caught 153 fish. Anyone can add 1 through 17 and get 153.
+        The same chapter names five men in that boat. Count those five names through
+        Matthew, Mark, Luke, and John — Peter, Thomas, Nathanael, James, and John —
+        and the total is 153. The rules are on the page. The count is from the text,
+        not from a quote. I am not asking you to believe a sermon. I am asking you
+        to add, and then to read the chapter.
+      </p>
+    </details>
+
+    <footer>
+      <span id="source">Cambridge Concord / KJV 1769 digital text</span>
+      <span><a href="/">lab</a> · counted live, nothing hardcoded</span>
+    </footer>
+  </div>
+
+<script>
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function drawTriangle(n) {
+  const root = document.getElementById('triangle');
+  root.innerHTML = '';
+  let delay = 0;
+  for (let r = 1; r <= n; r++) {
+    const row = document.createElement('div');
+    row.className = 'trow';
+    for (let i = 0; i < r; i++) {
+      const d = document.createElement('span');
+      d.className = 'dot';
+      d.style.animationDelay = (delay * 8) + 'ms';
+      row.appendChild(d);
+      delay++;
+    }
+    root.appendChild(row);
+  }
+}
+
+function renderSum(tri, cubes) {
+  const series = tri.series.join(' + ');
+  const cubeBits = cubes.digits.map((d, i) => `${d}³ = ${cubes.cubes[i]}`).join('  ·  ');
+  document.getElementById('sumline').innerHTML =
+    `${series}  =  <strong>${tri.sum}</strong><br>${cubeBits}  =  <strong>${cubes.sum}</strong>`;
+}
+
+function renderCrew(data) {
+  const men = data.crew || [];
+  const rows = men.map(m => `
+    <div class="man">
+      <div>
+        <div class="name">${esc(m.name)}</div>
+        <div class="as">in the boat as “${esc(m.in_boat_as)}”</div>
+      </div>
+      <div class="n">${m.count}</div>
+    </div>`).join('');
+  const ok = data.pass;
+  document.getElementById('crew').innerHTML = `
+    ${rows}
+    <div class="total">
+      <span>Total in the Gospels
+        <span class="badge ${ok ? 'ok' : 'no'}">${ok ? 'matches the catch' : 'does not match'}</span>
+      </span>
+      <span class="n">${data.actual}</span>
+    </div>`;
+}
+
+async function load153() {
+  try {
+    const r = await fetch('/api/153');
+    if (!r.ok) throw new Error('Could not count from the text');
+    const d = await r.json();
+    if (d.verses && d.verses.catch && d.verses.catch.text) {
+      document.getElementById('catch-text').textContent = d.verses.catch.text;
+      document.getElementById('catch-ref').textContent = d.verses.catch.ref;
+    }
+    if (d.verses && d.verses.crew && d.verses.crew.text) {
+      document.getElementById('crew-text').textContent = d.verses.crew.text;
+      document.getElementById('crew-ref').textContent = d.verses.crew.ref;
+    }
+    const tri = d.triangle || {n:17, series:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], sum:153};
+    const cubes = d.digit_cubes || {digits:[1,5,3], cubes:[1,125,27], sum:153};
+    drawTriangle(tri.n);
+    renderSum(tri, cubes);
+    renderCrew(d);
+    document.getElementById('rules').innerHTML =
+      (d.rules || []).map(rule => `<li>${esc(rule)}</li>`).join('');
+    if (d.source) document.getElementById('source').textContent = d.source;
+    document.getElementById('big').textContent = d.actual;
+  } catch (e) {
+    document.getElementById('crew').innerHTML = `<p class="err">${esc(e.message)}</p>`;
+    drawTriangle(17);
+    renderSum(
+      {series:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], sum:153},
+      {digits:[1,5,3], cubes:[1,125,27], sum:153}
+    );
+  }
+}
+
+async function loadChapter() {
+  try {
+    const r = await fetch('/chapter/John/21');
+    if (!r.ok) throw new Error('Chapter unavailable');
+    const d = await r.json();
+    document.getElementById('chapter').innerHTML = d.verses.map(v => `
+      <div class="cv">
+        <div class="vn">${v.verse}</div>
+        <div>${esc(v.text)}</div>
+      </div>`).join('');
+  } catch (e) {
+    document.getElementById('chapter').innerHTML = `<p class="err">${esc(e.message)}</p>`;
+  }
+}
+
+drawTriangle(17);
+renderSum(
+  {series:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], sum:153},
+  {digits:[1,5,3], cubes:[1,125,27], sum:153}
+);
+load153();
+loadChapter();
+</script>
+</body>
+</html>

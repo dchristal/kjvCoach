@@ -61,7 +61,7 @@ def load(path: Path = _DEFAULT) -> CCDBData:
     # Raw token count from source text (for 7^7 verification)
     # We split the raw text on whitespace — same as the kjvcode.com concordance file
     # The ccdb and the concordance file share the same token count
-    concord = path.parent / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+    concord = path.parent / "kjv.txt"
     raw_tokens = len(concord.read_text(encoding="utf-8").split()) if concord.exists() else 0
 
     # Parse WORDS section

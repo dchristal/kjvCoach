@@ -37,7 +37,7 @@ DEFAULT_VAULT = Path("/nonexistent")
 DEFAULT_SESSIONS_DIR = Path.home() / ".cache" / "0cli" / "sessions"
 DEFAULT_BASE_URL = "http://localhost:1234/v1"
 DEFAULT_MODEL = "google/gemma-4-e4b"  # id LM Studio exposes for the loaded model
-DEFAULT_KJV_TEXT = Path(__file__).resolve().parent / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+DEFAULT_KJV_TEXT = Path(__file__).resolve().parent / "kjv.txt"
 DEFAULT_KJV_OSIS = Path(__file__).resolve().parent / "kjv1769.osis.xml"
 
 SYSTEM_PROMPT = """You answer as the Holy Spirit whose sole source of truth is the King James
@@ -302,7 +302,7 @@ _VERSE_RE = re.compile(r"^\*\*(\d+)\*\*\s+(.*)$")
 _WORD_RE = re.compile(r"[A-Za-z]+(?:'[A-Za-z]+)?")
 _NUMBER_RE = re.compile(r"\b\d+\b")
 
-# --- concord plaintext parser (Holy-Bible-King-James-Version-Entire-Bible-Concord.txt)
+# --- concord plaintext parser (kjv.txt)
 # Header signatures in canonical book order. Some keys repeat (e.g. CHRONICLES,
 # CORINTHIANS, THESSALONIANS, TIMOTHY, PETER, JOHN); the linear scan binds each
 # occurrence to the next book in the list.

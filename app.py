@@ -26,12 +26,18 @@ STATIC_DIR    = os.path.join(BASE_DIR, "static")
 # ---------------------------------------------------------------------------
 # LLM client (daveLLM — connects to LM Studio or any OpenAI-compatible server)
 # ---------------------------------------------------------------------------
-_LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:1234/v1")
-_LLM_MODEL    = os.environ.get("LLM_MODEL",    "google/gemma-4-e4b")
-_llm          = _OpenAI(
-    base_url=_LLM_BASE_URL,
-    api_key=os.environ.get("LLM_API_KEY", "lm-studio"),
-)
+# LLM client: Groq free tier when GROQ_API_KEY is set, else LM Studio local.
+# Set LLM_BASE_URL / LLM_MODEL to override either path.
+_GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
+if _GROQ_API_KEY:
+    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.groq.com/openai/v1")
+    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "llama-3.3-70b-versatile")
+    _llm          = _OpenAI(base_url=_LLM_BASE_URL, api_key=_GROQ_API_KEY)
+else:
+    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:1234/v1")
+    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "google/gemma-4-e4b")
+    _llm          = _OpenAI(base_url=_LLM_BASE_URL,
+                            api_key=os.environ.get("LLM_API_KEY", "lm-studio"))
 PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
@@ -169,6 +175,16 @@ def api_153():
     }
 
 
+@app.get("/api/chat/info")
+def api_chat_info():
+    """Which LLM backend is active."""
+    return {
+        "model":   _LLM_MODEL,
+        "backend": "groq" if _GROQ_API_KEY else "local",
+        "enabled": bool(_GROQ_API_KEY or True),
+    }
+
+
 @app.post("/api/chat")
 async def api_chat(payload: dict):
     """Stream a KJV-grounded LLM response as SSE.
@@ -177,7 +193,7 @@ async def api_chat(payload: dict):
     Events: {"token": str} | {"tool": str, "result": dict} | {"error": str} | [DONE]
     """
     user_messages = payload.get("messages", [])
-    _KJV_PATH = Path(BASE_DIR) / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+    _KJV_PATH = Path(BASE_DIR) / "kjv.txt"
 
     async def _stream():
         turn = [{"role": "system", "content": SYSTEM_PROMPT}] + [
@@ -237,8 +253,11 @@ async def api_chat(payload: dict):
 
         except Exception as exc:
             msg = str(exc)
-            if "Connection" in msg or "connect" in msg.lower():
-                msg = f"Cannot reach LLM server at {_LLM_BASE_URL}. Is LM Studio running with a model loaded?"
+            if "Connection" in msg or "connect" in msg.lower() or "refused" in msg.lower():
+                if _GROQ_API_KEY:
+                    msg = "Could not reach Groq. Check your GROQ_API_KEY and internet connection."
+                else:
+                    msg = f"Cannot reach LLM server at {_LLM_BASE_URL}. Is LM Studio running with a model loaded?"
             yield f"data: {json.dumps({'error': msg})}\n\n"
 
         yield "data: [DONE]\n\n"
@@ -571,7 +590,7 @@ def stats():
     return _compute_stats()
 
 
-_KJV_TXT = Path(BASE_DIR) / "Holy-Bible-King-James-Version-Entire-Bible-Concord.txt"
+_KJV_TXT = Path(BASE_DIR) / "kjv.txt"
 _NT_BOOKS = [
     "Matthew","Mark","Luke","John","Acts","Romans",
     "1 Corinthians","2 Corinthians","Galatians","Ephesians",
