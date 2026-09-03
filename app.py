@@ -34,10 +34,11 @@ if _GROQ_API_KEY:
     _LLM_MODEL    = os.environ.get("LLM_MODEL",    "llama-3.3-70b-versatile")
     _llm          = _OpenAI(base_url=_LLM_BASE_URL, api_key=_GROQ_API_KEY)
 else:
-    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:1234/v1")
-    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "google/gemma-4-e4b")
+    # Local: whatever model `tidy switch` has loaded on llama-server (:8080).
+    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:8080/v1")
+    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "local")
     _llm          = _OpenAI(base_url=_LLM_BASE_URL,
-                            api_key=os.environ.get("LLM_API_KEY", "lm-studio"))
+                            api_key=os.environ.get("LLM_API_KEY", "local"))
 PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
