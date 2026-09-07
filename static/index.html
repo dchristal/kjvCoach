@@ -57,6 +57,16 @@ nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);
 .copy-btn.copied{background:#d4edda;border-color:#a3d4ae;color:#1a5c2a}
 .toolbar .copy-all-btn{margin-left:8px}
 .copy-hint{font-size:.78rem;color:#999;margin:0 0 8px}
+.results-copy-bar{background:#5a3e1b;color:#f8f5ef;border-radius:8px;padding:12px 14px;
+  margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.results-copy-bar strong{flex:1;min-width:140px;font-size:.95rem}
+.results-copy-bar .btn-copy-pack{background:#e8dfc8;color:#2c2416;border:none;border-radius:6px;
+  padding:12px 16px;font-family:Georgia,serif;font-size:.95rem;font-weight:700;cursor:pointer;
+  min-height:44px}
+.results-copy-bar .btn-copy-pack.copied{background:#d4edda;color:#1a5c2a}
+.results-plain{width:100%;min-height:110px;margin:0 0 14px;padding:10px 12px;
+  font-family:Georgia,serif;font-size:.9rem;line-height:1.55;border:1px solid #c8b99a;
+  border-radius:8px;background:#fffdf8;color:#2c2416;resize:vertical}
 
 /* ---- Stats tab ---- */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px}
@@ -196,11 +206,7 @@ nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);
 
     <div class="toolbar">
       <span class="status" id="status"></span>
-      <div>
-        <button type="button" class="btn btn-sm copy-btn copy-all-btn hidden" id="copy-all"
-                onclick="copyAllVerses(this)">Copy all verses</button>
-        <button class="btn btn-brown btn-sm" onclick="doRandom()">Random verse ↻</button>
-      </div>
+      <button class="btn btn-brown btn-sm" onclick="doRandom()">Random verse ↻</button>
     </div>
 
     <div class="results" id="results"></div>
@@ -272,6 +278,8 @@ function hl(text, q) {
   return out;
 }
 
+let _lastResultPack = '';
+
 function card(v, q='') {
   return `<div class="verse-card">
     <div class="verse-card-head">
@@ -286,29 +294,49 @@ function verseClipboardText(ref, text) {
   return `${ref}\n${text}`.trim();
 }
 
+function packFromVerses(verses) {
+  return (verses || []).map(v => verseClipboardText(v.ref, v.text)).join('\n\n');
+}
+
 async function copyText(text, btn) {
+  let ok = false;
   try {
     await navigator.clipboard.writeText(text);
+    ok = true;
   } catch {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch {
+      ok = false;
+    }
+  }
+  // Always surface the pack in the visible textarea so paste still works
+  // when the clipboard API is blocked (iframe / permissions).
+  const plain = document.getElementById('results-plain');
+  if (plain) {
+    plain.value = text;
+    plain.focus();
+    plain.select();
   }
   if (btn) {
-    const prev = btn.textContent;
-    btn.textContent = 'Copied';
+    const prev = btn.dataset.label || btn.textContent;
+    btn.dataset.label = prev;
+    btn.textContent = ok ? 'Copied — paste anywhere' : 'Selected below — copy manually';
     btn.classList.add('copied');
     setTimeout(() => {
       btn.textContent = prev;
       btn.classList.remove('copied');
-    }, 1400);
+    }, 2200);
   }
+  return ok;
 }
 
 function copyVerseCard(el) {
@@ -320,14 +348,27 @@ function copyVerseCard(el) {
 }
 
 function copyAllVerses(btn) {
-  const cards = [...document.querySelectorAll('#results .verse-card')];
-  if (!cards.length) return;
-  const text = cards.map(c => {
+  const text = _lastResultPack || [...document.querySelectorAll('#results .verse-card')].map(c => {
     const ref = c.querySelector('.vref').textContent.trim();
     const body = c.querySelector('.vtext').textContent.trim();
     return verseClipboardText(ref, body);
   }).join('\n\n');
+  if (!text) return;
   return copyText(text, btn);
+}
+
+function resultsShell(cardsHtml, packText, count) {
+  _lastResultPack = packText;
+  const n = count || (packText ? packText.split('\n\n').length : 0);
+  return `
+    <div class="results-copy-bar">
+      <strong>${n} verse${n===1?'':'s'} — copy the set to paste elsewhere</strong>
+      <button type="button" class="btn-copy-pack" data-label="Copy these ${n} verses"
+              onclick="copyAllVerses(this)">Copy these ${n} verses</button>
+    </div>
+    <label class="copy-hint" for="results-plain">Plain text (select all / long-press if the button cannot write the clipboard):</label>
+    <textarea id="results-plain" class="results-plain" readonly>${escHtml(packText)}</textarea>
+    ${cardsHtml}`;
 }
 
 function copyVblock(btn) {
@@ -354,7 +395,8 @@ async function doSearch() {
     if (!r.ok) throw new Error((await r.json()).detail);
     const d = await r.json();
     setStatus(d.count ? `${d.count} verse${d.count!==1?'s':''} found` : 'No verses found.');
-    setResults(d.verses.map(v=>card(v,q)).join(''));
+    if (d.verses && d.verses.length) showVersePack(d.verses, q);
+    else setResults('');
   } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
 }
 
@@ -372,10 +414,10 @@ async function doRef() {
     const d = await r.json();
     if (d.verses) {
       setStatus(`${d.book} ${d.chapter} — ${d.verse_count} verses`);
-      setResults(d.verses.map(vv=>card(vv)).join(''));
+      showVersePack(d.verses);
     } else {
       setStatus(d.ref);
-      setResults(card(d));
+      showVersePack([d]);
     }
   } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
 }
@@ -385,22 +427,20 @@ async function doRandom() {
   try {
     const r = await fetch('/random'+(t?`?testament=${t}`:''));
     const v = await r.json();
-    setStatus('Random verse'); setResults(card(v));
+    setStatus('Random verse');
+    showVersePack([v]);
   } catch(e) {}
 }
 
 function setStatus(s){ document.getElementById('status').textContent = s; }
 function setResults(h){
-  const box = document.getElementById('results');
-  const hasCards = !!(h && h.includes('verse-card'));
-  box.innerHTML = hasCards
-    ? `<div class="copy-hint">Tap <strong>Copy verse</strong> (or the verse text) to copy reference + scripture. Use <strong>Copy all</strong> above for the whole list.</div>${h}`
-    : h;
-  const copyAll = document.getElementById('copy-all');
-  if (copyAll) {
-    copyAll.classList.toggle('hidden', !hasCards);
-    copyAll.textContent = 'Copy all verses';
-  }
+  document.getElementById('results').innerHTML = h || '';
+}
+function showVersePack(verses, q='') {
+  const list = verses || [];
+  const cards = list.map(v => card(v, q)).join('');
+  const pack = packFromVerses(list);
+  setResults(resultsShell(cards, pack, list.length));
 }
 function enc(s){ return encodeURIComponent(s); }
 function fmt(n){ return Number(n).toLocaleString(); }

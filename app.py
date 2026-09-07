@@ -179,17 +179,28 @@ def _verse_dict(row) -> Dict[str, Any]:
 # Routes
 # ---------------------------------------------------------------------------
 
+def _index_html():
+    """Serve the lab UI with no-cache so Copy controls are not stuck on an old build."""
+    return FileResponse(
+        os.path.join(STATIC_DIR, "index.html"),
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+        },
+    )
+
+
 @app.get("/")
 def root():
     _require_db()
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+    return _index_html()
 
 
 @app.get("/lab")
 def lab():
     """The verification workbench — kept for counting, not for strangers."""
     _require_db()
-    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+    return _index_html()
 
 
 @app.get("/153")
