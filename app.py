@@ -24,21 +24,70 @@ DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
 STATIC_DIR    = os.path.join(BASE_DIR, "static")
 
 # ---------------------------------------------------------------------------
-# LLM client (daveLLM — connects to LM Studio or any OpenAI-compatible server)
+# LLM client: Groq when GROQ_API_KEY is set, else shared llama-server (:8080).
+# Set LLM_BASE_URL / LLM_MODEL to override. For local, omit LLM_MODEL (or set
+# it to "local" / "auto") to pick whatever the router currently has loaded.
 # ---------------------------------------------------------------------------
-# LLM client: Groq free tier when GROQ_API_KEY is set, else LM Studio local.
-# Set LLM_BASE_URL / LLM_MODEL to override either path.
 _GROQ_API_KEY = os.environ.get("GROQ_API_KEY")
 if _GROQ_API_KEY:
     _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "https://api.groq.com/openai/v1")
-    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "llama-3.3-70b-versatile")
-    _llm          = _OpenAI(base_url=_LLM_BASE_URL, api_key=_GROQ_API_KEY)
+    _LLM_MODEL_CFG = os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile")
+    _llm = _OpenAI(base_url=_LLM_BASE_URL, api_key=_GROQ_API_KEY)
 else:
-    # Local: whatever model `tidy switch` has loaded on llama-server (:8080).
-    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://localhost:8080/v1")
-    _LLM_MODEL    = os.environ.get("LLM_MODEL",    "local")
-    _llm          = _OpenAI(base_url=_LLM_BASE_URL,
-                            api_key=os.environ.get("LLM_API_KEY", "local"))
+    _LLM_BASE_URL = os.environ.get("LLM_BASE_URL", "http://127.0.0.1:8080/v1")
+    _LLM_MODEL_CFG = os.environ.get("LLM_MODEL", "auto")
+    _llm = _OpenAI(
+        base_url=_LLM_BASE_URL,
+        api_key=os.environ.get("LLM_API_KEY", "local"),
+    )
+
+
+def _resolve_router_model(base_url: str) -> str:
+    """Return id of a loaded router model (skip embeddings)."""
+    import urllib.error
+    import urllib.request
+
+    url = base_url.rstrip("/") + "/models"
+    try:
+        with urllib.request.urlopen(url, timeout=2.5) as resp:
+            payload = json.loads(resp.read().decode())
+    except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
+        return ""
+
+    models = payload.get("data") or []
+    loaded: List[str] = []
+    candidates: List[str] = []
+    for m in models:
+        mid = (m.get("id") or "").strip()
+        if not mid or "embed" in mid.lower():
+            continue
+        candidates.append(mid)
+        st = m.get("status") or {}
+        val = st.get("value") if isinstance(st, dict) else st
+        if val == "loaded":
+            loaded.append(mid)
+    if loaded:
+        return loaded[0]
+    return candidates[0] if candidates else ""
+
+
+def _current_model() -> str:
+    """Model id for the next chat call — resolve 'auto'/'local' from the router."""
+    if _GROQ_API_KEY:
+        return _LLM_MODEL_CFG
+    cfg = (_LLM_MODEL_CFG or "auto").strip()
+    if cfg and cfg.lower() not in {"auto", "local", "default"}:
+        return cfg
+    resolved = _resolve_router_model(_LLM_BASE_URL)
+    if resolved:
+        return resolved
+    raise HTTPException(
+        503,
+        f"No loaded model at {_LLM_BASE_URL}. Load one with llm-serve / tidy, "
+        "or set LLM_MODEL to a router id.",
+    )
+
+
 PATTERNS_PATH = Path(BASE_DIR) / "patterns.json"
 
 app = FastAPI(title="kjvCoach", description="KJV scripture lookup and Bible facts")
@@ -226,10 +275,17 @@ def api_153():
 @app.get("/api/chat/info")
 def api_chat_info():
     """Which LLM backend is active."""
+    model = _LLM_MODEL_CFG
+    if not _GROQ_API_KEY:
+        try:
+            model = _current_model()
+        except HTTPException:
+            model = _LLM_MODEL_CFG
     return {
-        "model":   _LLM_MODEL,
+        "model":   model,
         "backend": "groq" if _GROQ_API_KEY else "local",
-        "enabled": bool(_GROQ_API_KEY or True),
+        "base_url": _LLM_BASE_URL,
+        "enabled": True,
     }
 
 
@@ -244,6 +300,13 @@ async def api_chat(payload: dict):
     _KJV_PATH = Path(BASE_DIR) / "kjv.txt"
 
     async def _stream():
+        try:
+            model_id = _current_model()
+        except HTTPException as e:
+            yield f"data: {json.dumps({'error': e.detail})}\n\n"
+            yield "data: [DONE]\n\n"
+            return
+
         turn = [{"role": "system", "content": SYSTEM_PROMPT}] + [
             {"role": m["role"], "content": m["content"]}
             for m in user_messages
@@ -254,8 +317,8 @@ async def api_chat(payload: dict):
             for _ in range(4):
                 resp = await asyncio.get_event_loop().run_in_executor(
                     None,
-                    lambda t=turn: _llm.chat.completions.create(
-                        model=_LLM_MODEL, messages=t,
+                    lambda t=turn, mid=model_id: _llm.chat.completions.create(
+                        model=mid, messages=t,
                         tools=KJV_TOOLS, tool_choice="auto", stream=False,
                     ),
                 )
@@ -290,8 +353,8 @@ async def api_chat(payload: dict):
             # Stream the final text response
             stream = await asyncio.get_event_loop().run_in_executor(
                 None,
-                lambda: _llm.chat.completions.create(
-                    model=_LLM_MODEL, messages=turn, stream=True,
+                lambda t=turn, mid=model_id: _llm.chat.completions.create(
+                    model=mid, messages=t, stream=True,
                 ),
             )
             for ev in stream:
@@ -305,7 +368,10 @@ async def api_chat(payload: dict):
                 if _GROQ_API_KEY:
                     msg = "Could not reach Groq. Check your GROQ_API_KEY and internet connection."
                 else:
-                    msg = f"Cannot reach LLM server at {_LLM_BASE_URL}. Is LM Studio running with a model loaded?"
+                    msg = (
+                        f"Cannot reach LLM server at {_LLM_BASE_URL}. "
+                        "Is llama-server running with a model loaded?"
+                    )
             yield f"data: {json.dumps({'error': msg})}\n\n"
 
         yield "data: [DONE]\n\n"
