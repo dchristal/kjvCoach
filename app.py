@@ -15,13 +15,15 @@ import ccdb as _ccdb
 import kjvcode as _kjv
 from chat import SYSTEM_PROMPT, KJV_TOOLS, _dispatch_tool
 from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI as _OpenAI
 
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
 STATIC_DIR    = os.path.join(BASE_DIR, "static")
+# Bump when the Search/copy UI changes so phones cannot keep a cached `/`.
+UI_BUILD      = "20260907c"
 
 # ---------------------------------------------------------------------------
 # LLM client: Groq when GROQ_API_KEY is set, else shared llama-server (:8080).
@@ -179,23 +181,41 @@ def _verse_dict(row) -> Dict[str, Any]:
 # Routes
 # ---------------------------------------------------------------------------
 
+def _no_cache_headers(*, clear_site_cache: bool = False) -> dict:
+    headers = {
+        "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+        "Pragma": "no-cache",
+        "Expires": "0",
+        "Surrogate-Control": "no-store",
+        "Vary": "*",
+    }
+    # HTTPS clients (phone Chrome via Tailscale) honor this and drop cached `/`.
+    if clear_site_cache:
+        headers["Clear-Site-Data"] = '"cache"'
+    return headers
+
+
 def _index_html():
     """Serve the lab UI with no-cache so Copy controls are not stuck on an old build."""
     return FileResponse(
         os.path.join(STATIC_DIR, "index.html"),
-        headers={
-            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
-            "Pragma": "no-cache",
-            "Expires": "0",
-            # Discourage shared caches (Tailscale/CDN/browser back-forward).
-            "Surrogate-Control": "no-store",
-            "Vary": "*",
-        },
+        headers=_no_cache_headers(),
     )
 
 
 @app.get("/")
 def root():
+    """Bounce to a versioned path so mobile Chrome cannot reuse a stale `/` document."""
+    _require_db()
+    return RedirectResponse(
+        url=f"/r/{UI_BUILD}/",
+        status_code=302,
+        headers=_no_cache_headers(clear_site_cache=True),
+    )
+
+
+@app.get("/r/{build}/")
+def root_versioned(build: str):
     _require_db()
     return _index_html()
 
@@ -204,7 +224,11 @@ def root():
 def lab():
     """The verification workbench — kept for counting, not for strangers."""
     _require_db()
-    return _index_html()
+    return RedirectResponse(
+        url=f"/r/{UI_BUILD}/",
+        status_code=302,
+        headers=_no_cache_headers(clear_site_cache=True),
+    )
 
 
 @app.get("/153")
