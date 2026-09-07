@@ -1,5 +1,5 @@
 #!/bin/bash
-# tidy:ui http://127.0.0.1:8002/
+# tidy:ui http://127.0.0.1:8002/ui
 # tidy:nogpu  — UI/proxy only; uses whatever model llama-server has on :8080.
 set -euo pipefail
 cd "$(dirname "$0")"

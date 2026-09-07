@@ -14,16 +14,16 @@ import asyncio
 import ccdb as _ccdb
 import kjvcode as _kjv
 from chat import SYSTEM_PROMPT, KJV_TOOLS, _dispatch_tool
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI as _OpenAI
 
 BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
 STATIC_DIR    = os.path.join(BASE_DIR, "static")
-# Bump when the Search/copy UI changes so phones cannot keep a cached `/`.
-UI_BUILD      = "20260907d"
+# Bump when the Search/copy UI changes (shown in the page header).
+UI_BUILD      = "20260907e"
 
 # ---------------------------------------------------------------------------
 # LLM client: Groq when GROQ_API_KEY is set, else shared llama-server (:8080).
@@ -192,57 +192,31 @@ def _no_cache_headers() -> dict:
 
 
 def _index_html():
-    """Serve the lab UI with no-cache so Copy controls are not stuck on an old build."""
+    """Serve the lab UI with no-cache. No redirects — Tailscale absolute
+    Location headers were resolving to 127.0.0.1 and 404ing on phones."""
     return FileResponse(
         os.path.join(STATIC_DIR, "index.html"),
         headers=_no_cache_headers(),
     )
 
 
-def _ui_url(request: Request) -> str:
-    # Absolute URL — relative Location + Clear-Site-Data broke some mobile Chrome loads.
-    return str(request.base_url).rstrip("/") + f"/ui/{UI_BUILD}"
-
-
 @app.get("/")
-def root(request: Request):
-    """Bounce to a versioned path so mobile Chrome cannot reuse a stale `/` document."""
-    _require_db()
-    return RedirectResponse(
-        url=_ui_url(request),
-        status_code=302,
-        headers=_no_cache_headers(),
-    )
-
-
 @app.get("/ui")
 @app.get("/ui/")
-def ui_latest(request: Request):
+@app.get("/lab")
+def root():
     _require_db()
-    return RedirectResponse(url=_ui_url(request), status_code=302, headers=_no_cache_headers())
+    return _index_html()
 
 
 @app.get("/ui/{build}")
 @app.get("/ui/{build}/")
-def ui_versioned(build: str):
-    """Versioned lab UI (trailing slash optional)."""
-    _require_db()
-    return _index_html()
-
-
-# Keep old /r/… links working (with or without trailing slash).
 @app.get("/r/{build}")
 @app.get("/r/{build}/")
-def root_versioned_legacy(build: str):
+def ui_versioned(build: str):
+    """Aliases so bookmarks / old links still load the lab UI."""
     _require_db()
     return _index_html()
-
-
-@app.get("/lab")
-def lab(request: Request):
-    """The verification workbench — kept for counting, not for strangers."""
-    _require_db()
-    return RedirectResponse(url=_ui_url(request), status_code=302, headers=_no_cache_headers())
 
 
 @app.get("/153")
@@ -1302,6 +1276,19 @@ def verify():
     if _verify_cache is None:
         return {"status": "warming", "patterns": []}
     return _verify_cache
+
+
+@app.get("/{full_path:path}")
+def spa_fallback(full_path: str):
+    """Never show raw JSON 404 in the browser for unknown UI paths.
+
+    API/static routes are registered above and take precedence. Anything else
+    that looks like a document navigation gets the lab UI (or a tiny HTML hint).
+    """
+    if full_path.startswith(("api/", "static/", "docs", "openapi", "redoc")):
+        raise HTTPException(404, f"Not Found: /{full_path}")
+    _require_db()
+    return _index_html()
 
 
 if __name__ == "__main__":
