@@ -14,7 +14,7 @@ import asyncio
 import ccdb as _ccdb
 import kjvcode as _kjv
 from chat import SYSTEM_PROMPT, KJV_TOOLS, _dispatch_tool
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from openai import OpenAI as _OpenAI
@@ -23,7 +23,7 @@ BASE_DIR      = os.path.dirname(os.path.abspath(__file__))
 DB_PATH       = os.path.join(BASE_DIR, "kjv.db")
 STATIC_DIR    = os.path.join(BASE_DIR, "static")
 # Bump when the Search/copy UI changes so phones cannot keep a cached `/`.
-UI_BUILD      = "20260907c"
+UI_BUILD      = "20260907d"
 
 # ---------------------------------------------------------------------------
 # LLM client: Groq when GROQ_API_KEY is set, else shared llama-server (:8080).
@@ -181,18 +181,14 @@ def _verse_dict(row) -> Dict[str, Any]:
 # Routes
 # ---------------------------------------------------------------------------
 
-def _no_cache_headers(*, clear_site_cache: bool = False) -> dict:
-    headers = {
+def _no_cache_headers() -> dict:
+    return {
         "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
         "Pragma": "no-cache",
         "Expires": "0",
         "Surrogate-Control": "no-store",
         "Vary": "*",
     }
-    # HTTPS clients (phone Chrome via Tailscale) honor this and drop cached `/`.
-    if clear_site_cache:
-        headers["Clear-Site-Data"] = '"cache"'
-    return headers
 
 
 def _index_html():
@@ -203,32 +199,50 @@ def _index_html():
     )
 
 
+def _ui_url(request: Request) -> str:
+    # Absolute URL — relative Location + Clear-Site-Data broke some mobile Chrome loads.
+    return str(request.base_url).rstrip("/") + f"/ui/{UI_BUILD}"
+
+
 @app.get("/")
-def root():
+def root(request: Request):
     """Bounce to a versioned path so mobile Chrome cannot reuse a stale `/` document."""
     _require_db()
     return RedirectResponse(
-        url=f"/r/{UI_BUILD}/",
+        url=_ui_url(request),
         status_code=302,
-        headers=_no_cache_headers(clear_site_cache=True),
+        headers=_no_cache_headers(),
     )
 
 
+@app.get("/ui")
+@app.get("/ui/")
+def ui_latest(request: Request):
+    _require_db()
+    return RedirectResponse(url=_ui_url(request), status_code=302, headers=_no_cache_headers())
+
+
+@app.get("/ui/{build}")
+@app.get("/ui/{build}/")
+def ui_versioned(build: str):
+    """Versioned lab UI (trailing slash optional)."""
+    _require_db()
+    return _index_html()
+
+
+# Keep old /r/… links working (with or without trailing slash).
+@app.get("/r/{build}")
 @app.get("/r/{build}/")
-def root_versioned(build: str):
+def root_versioned_legacy(build: str):
     _require_db()
     return _index_html()
 
 
 @app.get("/lab")
-def lab():
+def lab(request: Request):
     """The verification workbench — kept for counting, not for strangers."""
     _require_db()
-    return RedirectResponse(
-        url=f"/r/{UI_BUILD}/",
-        status_code=302,
-        headers=_no_cache_headers(clear_site_cache=True),
-    )
+    return RedirectResponse(url=_ui_url(request), status_code=302, headers=_no_cache_headers())
 
 
 @app.get("/153")
