@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>kjvCoach</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<!-- build: 2026-09-07c checkboxes -->
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Georgia,serif;background:#f8f5ef;color:#2c2416;min-height:100vh}
@@ -43,17 +46,32 @@ nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);
 .status{font-size:.88rem;color:#888;font-style:italic}
 
 .results{display:flex;flex-direction:column;gap:10px}
-.verse-card{background:#fff;border:1px solid #ddd4c0;border-radius:8px;padding:15px 18px}
-.verse-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}
+.verse-card{background:#fff;border:1px solid #ddd4c0;border-radius:8px;padding:15px 18px;
+  display:grid;grid-template-columns:auto 1fr;gap:10px 12px;align-items:start}
+.verse-card.unchecked{opacity:.55}
+.verse-check{margin-top:2px;width:20px;height:20px;accent-color:#5a3e1b;cursor:pointer}
+.verse-card-body{min-width:0}
+.verse-card-head{display:flex;align-items:center;gap:10px;margin-bottom:5px}
 .vref{font-size:.75rem;font-weight:700;color:#7a5a2b;letter-spacing:.06em;text-transform:uppercase}
 .vtext{font-size:1.05rem;line-height:1.7;user-select:text}
 .vtext em{background:#fff9c4;font-style:normal;border-radius:2px;padding:0 1px}
-.copy-btn{flex-shrink:0;padding:4px 10px;border:1px solid #c8b99a;border-radius:4px;
-  background:#f8f5ef;color:#5a3e1b;cursor:pointer;font-family:Georgia,serif;font-size:.72rem;
-  letter-spacing:.04em;text-transform:uppercase;transition:background .15s,border-color .15s}
-.copy-btn:hover{background:#efe8dc;border-color:#7a5a2b}
+.copy-btn{flex-shrink:0;padding:8px 14px;border:1px solid #c8b99a;border-radius:6px;
+  background:#efe8dc;color:#5a3e1b;cursor:pointer;font-family:Georgia,serif;font-size:.8rem;
+  font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  transition:background .15s,border-color .15s;min-height:36px}
+.copy-btn:hover{background:#e4d8c4;border-color:#7a5a2b}
 .copy-btn.copied{background:#d4edda;border-color:#a3d4ae;color:#1a5c2a}
-.toolbar .copy-all-btn{margin-left:8px}
+.copy-hint{font-size:.78rem;color:#999;margin:0 0 8px}
+.results-copy-bar{background:#5a3e1b;color:#f8f5ef;border-radius:8px;padding:12px 14px;
+  margin-bottom:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.results-copy-bar .btn-copy-pack{background:#e8dfc8;color:#2c2416;border:none;border-radius:6px;
+  padding:12px 16px;font-family:Georgia,serif;font-size:.95rem;font-weight:700;cursor:pointer;
+  min-height:44px}
+.results-copy-bar .btn-copy-pack.copied{background:#d4edda;color:#1a5c2a}
+.results-copy-bar .sel-meta{font-size:.85rem;opacity:.85;flex:1}
+.results-plain{width:100%;min-height:90px;margin:0 0 14px;padding:10px 12px;
+  font-family:Georgia,serif;font-size:.9rem;line-height:1.55;border:1px solid #c8b99a;
+  border-radius:8px;background:#fffdf8;color:#2c2416;resize:vertical}
 
 /* ---- Stats tab ---- */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-bottom:20px}
@@ -158,6 +176,7 @@ nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);
 <header>
   <h1>✝ kjvCoach</h1>
   <p>King James Bible — scripture only, no AI generation</p>
+  <p id="build-stamp" style="width:100%;margin:6px 0 0;font-size:.75rem;opacity:.55;font-style:normal">build 2026-09-07e · checkboxes + Copy selected</p>
   <nav>
     <button id="btn-search" onclick="showTab('search')">Search</button>
     <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
@@ -193,11 +212,7 @@ nav a.public-door{background:transparent;border:1px solid rgba(232,223,200,.55);
 
     <div class="toolbar">
       <span class="status" id="status"></span>
-      <div>
-        <button type="button" class="btn btn-sm copy-btn copy-all-btn hidden" id="copy-all"
-                onclick="copyAllVerses(this)">Copy all</button>
-        <button class="btn btn-brown btn-sm" onclick="doRandom()">Random verse ↻</button>
-      </div>
+      <button class="btn btn-brown btn-sm" onclick="doRandom()">Random verse ↻</button>
     </div>
 
     <div class="results" id="results"></div>
@@ -270,12 +285,16 @@ function hl(text, q) {
 }
 
 function card(v, q='') {
+  const id = `vsel-${escHtml(v.ref).replace(/[^a-zA-Z0-9]+/g, '-')}`;
   return `<div class="verse-card">
-    <div class="verse-card-head">
-      <div class="vref">${escHtml(v.ref)}</div>
-      <button type="button" class="copy-btn" onclick="copyVerseCard(this)">Copy</button>
+    <input type="checkbox" class="verse-check" id="${id}" checked
+           onchange="onVerseSelectChange()" aria-label="Include ${escHtml(v.ref)}">
+    <div class="verse-card-body">
+      <div class="verse-card-head">
+        <label class="vref" for="${id}">${escHtml(v.ref)}</label>
+      </div>
+      <div class="vtext">${hl(v.text, q)}</div>
     </div>
-    <div class="vtext">${hl(v.text, q)}</div>
   </div>`;
 }
 
@@ -283,47 +302,97 @@ function verseClipboardText(ref, text) {
   return `${ref}\n${text}`.trim();
 }
 
-async function copyText(text, btn) {
-  try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-  }
-  if (btn) {
-    const prev = btn.textContent;
-    btn.textContent = 'Copied';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = prev;
-      btn.classList.remove('copied');
-    }, 1400);
-  }
+function packFromVerses(verses) {
+  return (verses || []).map(v => verseClipboardText(v.ref, v.text)).join('\n\n');
 }
 
-function copyVerseCard(btn) {
-  const cardEl = btn.closest('.verse-card');
-  const ref = cardEl.querySelector('.vref').textContent.trim();
-  const text = cardEl.querySelector('.vtext').textContent.trim();
-  return copyText(verseClipboardText(ref, text), btn);
-}
-
-function copyAllVerses(btn) {
-  const cards = [...document.querySelectorAll('#results .verse-card')];
-  if (!cards.length) return;
-  const text = cards.map(c => {
+function selectedVersePack() {
+  return [...document.querySelectorAll('#results .verse-card')].filter(c => {
+    const cb = c.querySelector('.verse-check');
+    return cb && cb.checked;
+  }).map(c => {
     const ref = c.querySelector('.vref').textContent.trim();
     const body = c.querySelector('.vtext').textContent.trim();
     return verseClipboardText(ref, body);
   }).join('\n\n');
+}
+
+function selectedVerseCount() {
+  return [...document.querySelectorAll('#results .verse-check')].filter(cb => cb.checked).length;
+}
+
+function onVerseSelectChange() {
+  document.querySelectorAll('#results .verse-card').forEach(c => {
+    const cb = c.querySelector('.verse-check');
+    c.classList.toggle('unchecked', !(cb && cb.checked));
+  });
+  const n = selectedVerseCount();
+  const meta = document.getElementById('sel-meta');
+  if (meta) meta.textContent = `${n} selected`;
+  const btn = document.querySelector('.btn-copy-pack');
+  if (btn && !btn.classList.contains('copied')) {
+    btn.disabled = n === 0;
+  }
+  const plain = document.getElementById('results-plain');
+  if (plain) plain.value = selectedVersePack();
+}
+
+async function copyText(text, btn) {
+  let ok = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    ok = true;
+  } catch {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      document.body.appendChild(ta);
+      ta.select();
+      ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch {
+      ok = false;
+    }
+  }
+  const plain = document.getElementById('results-plain');
+  if (plain) {
+    plain.value = text;
+    plain.focus();
+    plain.select();
+  }
+  if (btn) {
+    const prev = btn.dataset.label || btn.textContent;
+    btn.dataset.label = prev;
+    btn.textContent = ok ? 'Copied' : 'Selected below';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = prev;
+      btn.classList.remove('copied');
+    }, 1800);
+  }
+  return ok;
+}
+
+function copySelectedVerses(btn) {
+  const text = selectedVersePack();
+  if (!text) return;
   return copyText(text, btn);
+}
+
+function resultsShell(cardsHtml, packText, count) {
+  const n = count || 0;
+  return `
+    <div class="results-copy-bar">
+      <button type="button" class="btn-copy-pack" data-label="Copy selected verses"
+              onclick="copySelectedVerses(this)">Copy selected verses</button>
+      <span class="sel-meta" id="sel-meta">${n} selected</span>
+    </div>
+    <label class="copy-hint" for="results-plain">Plain text preview (edit selection with the checkboxes):</label>
+    <textarea id="results-plain" class="results-plain" readonly>${escHtml(packText)}</textarea>
+    ${cardsHtml}`;
 }
 
 function copyVblock(btn) {
@@ -350,7 +419,8 @@ async function doSearch() {
     if (!r.ok) throw new Error((await r.json()).detail);
     const d = await r.json();
     setStatus(d.count ? `${d.count} verse${d.count!==1?'s':''} found` : 'No verses found.');
-    setResults(d.verses.map(v=>card(v,q)).join(''));
+    if (d.verses && d.verses.length) showVersePack(d.verses, q);
+    else setResults('');
   } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
 }
 
@@ -368,10 +438,10 @@ async function doRef() {
     const d = await r.json();
     if (d.verses) {
       setStatus(`${d.book} ${d.chapter} — ${d.verse_count} verses`);
-      setResults(d.verses.map(vv=>card(vv)).join(''));
+      showVersePack(d.verses);
     } else {
       setStatus(d.ref);
-      setResults(card(d));
+      showVersePack([d]);
     }
   } catch(e) { setStatus(''); setResults(`<div class="err">${e.message}</div>`); }
 }
@@ -381,15 +451,21 @@ async function doRandom() {
   try {
     const r = await fetch('/random'+(t?`?testament=${t}`:''));
     const v = await r.json();
-    setStatus('Random verse'); setResults(card(v));
+    setStatus('Random verse');
+    showVersePack([v]);
   } catch(e) {}
 }
 
 function setStatus(s){ document.getElementById('status').textContent = s; }
 function setResults(h){
-  document.getElementById('results').innerHTML = h;
-  const copyAll = document.getElementById('copy-all');
-  if (copyAll) copyAll.classList.toggle('hidden', !h || !h.includes('verse-card'));
+  document.getElementById('results').innerHTML = h || '';
+}
+function showVersePack(verses, q='') {
+  const list = verses || [];
+  const cards = list.map(v => card(v, q)).join('');
+  const pack = packFromVerses(list);
+  setResults(resultsShell(cards, pack, list.length));
+  onVerseSelectChange();
 }
 function enc(s){ return encodeURIComponent(s); }
 function fmt(n){ return Number(n).toLocaleString(); }
