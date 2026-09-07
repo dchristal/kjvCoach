@@ -186,6 +186,10 @@ def _index_html():
         headers={
             "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
             "Pragma": "no-cache",
+            "Expires": "0",
+            # Discourage shared caches (Tailscale/CDN/browser back-forward).
+            "Surrogate-Control": "no-store",
+            "Vary": "*",
         },
     )
 
