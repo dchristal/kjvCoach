@@ -1,10 +1,12 @@
 [
   {
-    "id": "raw-words-7pow7",
-    "label": "Total words = 7^7 = 823,543",
+    "id": "7x7x7x7x7x7x7-words-and-numbers",
+    "label": "7x7x7x7x7x7x7 words and numbers form the entire Bible",
     "url": "https://kjvcode.com/pattern/elton-anomaly/",
-    "note": "7 × 7 × 7 × 7 × 7 × 7 × 7",
+    "order": 1,
     "expected": 823543,
+    "door": "7x7x7x7x7x7x7-words-and-numbers",
+    "note": "7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7",
     "terms": [
       {
         "label": "All whitespace-delimited tokens in the KJV concordance text",
@@ -14,208 +16,246 @@
     ]
   },
   {
-    "id": "first-last-77777",
-    "label": "First & Last Words of First & Last Verses = 77,777",
-    "url": "https://kjvcode.com/pattern/first-last-words-first-last-verses-77777x/",
-    "note": "In (Gen 1:1 first) + earth (Gen 1:1 last) + The (Rev 22:21 first) + Amen (Rev 22:21 last)",
-    "expected": 77777,
-    "terms": [
+    "id": "five-fishermen-153",
+    "label": "153 mentions of the five fishermen who caught 153 fish",
+    "url": "https://kjvcode.com/pattern/153-fishes/",
+    "order": 2,
+    "expected": 153,
+    "door": "five-fishermen-153",
+    "note": "John 21:11 numbers the catch at 153. 153 is the 17th triangular number (1+2+\u2026+17) and 1\u00b3+5\u00b3+3\u00b3. The five men named in that boat \u2014 Peter, Thomas, Nathanael, and the sons of Zebedee (James, John) \u2014 are named 153 times in the Gospels. James excludes James the Less (8\u00d7) and the Lord's brother (2\u00d7). John counts 20 apostle verses only.",
+    "triangle_n": 17,
+    "type": "fishermen_153",
+    "james_antimentions": [
       {
-        "label": "\"In\" — first word of Genesis 1:1 (case-insensitive)",
-        "word": "in",
-        "exact_form": null
+        "book": "Matthew",
+        "chapter": 10,
+        "verse": 3,
+        "note": "James the son of Alphaeus (James the Less)"
       },
       {
-        "label": "\"earth\" — last word of Genesis 1:1 (exact lowercase only)",
-        "word": "earth",
-        "exact_form": "earth"
+        "book": "Matthew",
+        "chapter": 13,
+        "verse": 55,
+        "note": "James, half-brother of Jesus"
       },
       {
-        "label": "\"The\" — first word of Revelation 22:21 (case-insensitive)",
-        "word": "the",
-        "exact_form": null
+        "book": "Matthew",
+        "chapter": 27,
+        "verse": 56,
+        "note": "Mary the mother of James and Joses (James the Less)"
       },
       {
-        "label": "\"Amen\" — last word of Revelation 22:21 (exact capital-A only)",
-        "word": "amen",
-        "exact_form": "Amen"
+        "book": "Mark",
+        "chapter": 3,
+        "verse": 18,
+        "note": "James the son of Alphaeus (James the Less)"
+      },
+      {
+        "book": "Mark",
+        "chapter": 6,
+        "verse": 3,
+        "note": "James, half-brother of Jesus"
+      },
+      {
+        "book": "Mark",
+        "chapter": 15,
+        "verse": 40,
+        "note": "Mary the mother of James the less"
+      },
+      {
+        "book": "Mark",
+        "chapter": 16,
+        "verse": 1,
+        "note": "Mary the mother of James (James the Less)"
+      },
+      {
+        "book": "Luke",
+        "chapter": 6,
+        "verse": 15,
+        "note": "James the son of Alphaeus (James the Less)"
+      },
+      {
+        "book": "Luke",
+        "chapter": 6,
+        "verse": 16,
+        "note": "Judas the brother of James (James the Less)"
+      },
+      {
+        "book": "Luke",
+        "chapter": 24,
+        "verse": 10,
+        "note": "Mary the mother of James (James the Less)"
+      }
+    ],
+    "john_apostle_verses": [
+      {
+        "book": "Matthew",
+        "chapter": 4,
+        "verse": 21
+      },
+      {
+        "book": "Matthew",
+        "chapter": 10,
+        "verse": 2
+      },
+      {
+        "book": "Matthew",
+        "chapter": 17,
+        "verse": 1
+      },
+      {
+        "book": "Mark",
+        "chapter": 1,
+        "verse": 19
+      },
+      {
+        "book": "Mark",
+        "chapter": 1,
+        "verse": 29
+      },
+      {
+        "book": "Mark",
+        "chapter": 3,
+        "verse": 17
+      },
+      {
+        "book": "Mark",
+        "chapter": 5,
+        "verse": 37
+      },
+      {
+        "book": "Mark",
+        "chapter": 9,
+        "verse": 2
+      },
+      {
+        "book": "Mark",
+        "chapter": 9,
+        "verse": 38
+      },
+      {
+        "book": "Mark",
+        "chapter": 10,
+        "verse": 35
+      },
+      {
+        "book": "Mark",
+        "chapter": 10,
+        "verse": 41
+      },
+      {
+        "book": "Mark",
+        "chapter": 13,
+        "verse": 3
+      },
+      {
+        "book": "Mark",
+        "chapter": 14,
+        "verse": 33
+      },
+      {
+        "book": "Luke",
+        "chapter": 5,
+        "verse": 10
+      },
+      {
+        "book": "Luke",
+        "chapter": 6,
+        "verse": 14
+      },
+      {
+        "book": "Luke",
+        "chapter": 8,
+        "verse": 51
+      },
+      {
+        "book": "Luke",
+        "chapter": 9,
+        "verse": 28
+      },
+      {
+        "book": "Luke",
+        "chapter": 9,
+        "verse": 49
+      },
+      {
+        "book": "Luke",
+        "chapter": 9,
+        "verse": 54
+      },
+      {
+        "book": "Luke",
+        "chapter": 22,
+        "verse": 8
       }
     ]
   },
   {
-    "id": "god-moses-jesus-77x77",
-    "label": "God('s) + Moses(') + Jesus = 77×77 = 5,929",
-    "url": "https://kjvcode.com/pattern/god-moses-jesus-77x77/",
-    "note": "God('s)=4,101 + Moses(')=848 + Jesus pure=980. Verse-level exclusion of 3 antimetion verses (Acts 7:45, Col 4:11, Heb 4:8) which also contain God. kjvcode.com reports 4102+847 for the individual names; we get 4101+848 — same total 5,929.",
-    "expected": 5929,
-    "type": "god_moses_jesus",
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Colossians", "chapter": 4,  "verse": 11},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
-    ]
-  },
-  {
-    "id": "jesus-inner-circle-1200",
-    "label": "Jesus + Peter + James + John = 1,200 (entire Bible)",
-    "url": "https://kjvcode.com/pattern/jesus-peter-james-john-1200/",
-    "note": "Jesus=980 (3 antimentions), Peter=162 (incl. PETER at 1 Pet 1:1), James=21 (21 antimentions incl. JAMES 1:1, James the Less, and Lord's brother), John=37 (96 antimentions: 83 Gospel Baptist + 13 outside). 1,200 = 12×100.",
-    "expected": 1200,
-    "type": "jesus_inner_circle_1200",
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Colossians", "chapter": 4,  "verse": 11},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
-    ]
-  },
-  {
-    "id": "moses-aaron-1200",
-    "label": "Moses(') + Aaron(*) = 1,200 (entire Bible)",
-    "url": "https://kjvcode.com/pattern/moses-aaron-1200/",
-    "note": "Moses(')=848 (base+possessives), Aaron(*)=352 (base+Aaron's+Aaronites in 1 Chr 12:27 & 27:17). 1,200 reflects 12 tribes they led. No antimentions.",
-    "expected": 1200,
-    "type": "moses_aaron_1200"
-  },
-  {
-    "id": "fishermen-153",
-    "label": "Five Fishermen (John 21:2) = 153× in the Gospels",
-    "url": "https://kjvcode.com/pattern/153-fishes/",
-    "note": "John 21:11 numbers the catch at 153. 153 is the 17th triangular number (1+2+…+17) and 1³+5³+3³. The five men named in that boat — Peter, Thomas, Nathanael, and the sons of Zebedee (James, John) — are named 153 times in the Gospels. James excludes James the Less (8×) and the Lord's brother (2×). John counts 20 apostle verses only.",
-    "expected": 153,
-    "triangle_n": 17,
-    "type": "fishermen_153",
-    "james_antimentions": [
-      {"book": "Matthew", "chapter": 10, "verse": 3,  "note": "James the son of Alphaeus (James the Less)"},
-      {"book": "Matthew", "chapter": 13, "verse": 55, "note": "James, half-brother of Jesus"},
-      {"book": "Matthew", "chapter": 27, "verse": 56, "note": "Mary the mother of James and Joses (James the Less)"},
-      {"book": "Mark",    "chapter": 3,  "verse": 18, "note": "James the son of Alphaeus (James the Less)"},
-      {"book": "Mark",    "chapter": 6,  "verse": 3,  "note": "James, half-brother of Jesus"},
-      {"book": "Mark",    "chapter": 15, "verse": 40, "note": "Mary the mother of James the less"},
-      {"book": "Mark",    "chapter": 16, "verse": 1,  "note": "Mary the mother of James (James the Less)"},
-      {"book": "Luke",    "chapter": 6,  "verse": 15, "note": "James the son of Alphaeus (James the Less)"},
-      {"book": "Luke",    "chapter": 6,  "verse": 16, "note": "Judas the brother of James (James the Less)"},
-      {"book": "Luke",    "chapter": 24, "verse": 10, "note": "Mary the mother of James (James the Less)"}
-    ],
-    "john_apostle_verses": [
-      {"book": "Matthew", "chapter": 4,  "verse": 21},
-      {"book": "Matthew", "chapter": 10, "verse": 2},
-      {"book": "Matthew", "chapter": 17, "verse": 1},
-      {"book": "Mark",    "chapter": 1,  "verse": 19},
-      {"book": "Mark",    "chapter": 1,  "verse": 29},
-      {"book": "Mark",    "chapter": 3,  "verse": 17},
-      {"book": "Mark",    "chapter": 5,  "verse": 37},
-      {"book": "Mark",    "chapter": 9,  "verse": 2},
-      {"book": "Mark",    "chapter": 9,  "verse": 38},
-      {"book": "Mark",    "chapter": 10, "verse": 35},
-      {"book": "Mark",    "chapter": 10, "verse": 41},
-      {"book": "Mark",    "chapter": 13, "verse": 3},
-      {"book": "Mark",    "chapter": 14, "verse": 33},
-      {"book": "Luke",    "chapter": 5,  "verse": 10},
-      {"book": "Luke",    "chapter": 6,  "verse": 14},
-      {"book": "Luke",    "chapter": 8,  "verse": 51},
-      {"book": "Luke",    "chapter": 9,  "verse": 28},
-      {"book": "Luke",    "chapter": 9,  "verse": 49},
-      {"book": "Luke",    "chapter": 9,  "verse": 54},
-      {"book": "Luke",    "chapter": 22, "verse": 8}
-    ]
-  },
-  {
-    "id": "jesus-elijah-77x7",
-    "label": "Jesus + Elijah + Elias = 77×7 + 77×7 = 1,078",
-    "url": "https://kjvcode.com/pattern/jesus-elijah-77x7/",
-    "note": "Jesus pure=980, Elijah=68 (Ezra 10:21 excluded — different person), Elias=30. Total 1,078 = 2×539 = 2×(77×7). No possessives of Elijah or Elias exist in the KJV.",
-    "expected": 1078,
-    "type": "jesus_elijah",
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Colossians", "chapter": 4,  "verse": 11},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
-    ],
-    "elijah_antimentions": [
-      {"book": "Ezra", "chapter": 10, "verse": 21, "note": "A different Elijah — one of the sons of Harim who took a foreign wife"}
-    ]
-  },
-  {
-    "id": "jesus-christ-david-abraham-980x3",
-    "label": "Jesus + Christ('s) + David('s) + Abraham('s) = 980×3 = 2,940",
-    "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",
-    "note": "Jesus pure=980, Christ('s)=571, David('s)=1139, Abraham('s)=250. Possessives use curly apostrophes in the text. Same 3 Jesus antimentions as pattern 3.",
-    "expected": 2940,
-    "type": "four_names_980x3",
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8},
-      {"book": "Colossians", "chapter": 4,  "verse": 11}
-    ]
-  },
-  {
-    "id": "jesus-god-7777",
-    "label": "Jesus + GOD (uppercase titles) = 7,777",
-    "url": "https://kjvcode.com/pattern/jesus-god-uppercase-7777x/",
-    "note": "All-caps names of God (LORD, GOD, JEHOVAH, I AM, JAH) + all-caps Christ titles (BRANCH, KING) + Jesus/JESUS pure (980). I AM counts only Exodus 3:14's 3 occurrences — where God defines his own name.",
-    "expected": 7777,
-    "type": "jesus_god_7777",
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8},
-      {"book": "Colossians", "chapter": 4,  "verse": 11}
-    ]
-  },
-  {
-    "id": "verses-staircase-7777",
-    "label": "Total Verses = 7,774 + 7,775 + 7,776 + 7,777 = 31,102",
-    "url": "https://kjvcode.com/pattern/total-verses-in-the-bible-staircase-7777/",
-    "note": "31,102 is the unique four-consecutive-integer staircase ending on 7,777",
-    "expected": 31102,
-    "type": "staircase_verses",
-    "staircase": [7774, 7775, 7776, 7777]
-  },
-  {
-    "id": "jesus-christ-777x777",
-    "label": "Jesus(*) + Christ(*) = 777 + 777 = 1,554",
-    "url": "https://kjvcode.com/pattern/jesus-christ-777x/",
-    "note": "Jesus(*) = Jesus + Jesus' + JESUS (all caps). Christ(*) = Christ + Christs + Christ's + Christian + Christians. 3 Jesus antimentions + 2 false-Christ antimentions excluded.",
-    "expected": 1554,
-    "type": "jesus_christ_777",
-    "expected_jesus": 980,
-    "expected_christ": 574,
-    "jesus_antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45, "note": "Refers to Joshua, not Jesus Christ"},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8,  "note": "Refers to Joshua, not Jesus Christ"},
-      {"book": "Colossians", "chapter": 4,  "verse": 11, "note": "Jesus called Justus — different person"}
-    ],
-    "christ_antimentions": [
-      {"book": "Matthew", "chapter": 24, "verse": 24, "note": "False Christs"},
-      {"book": "Mark",    "chapter": 13, "verse": 22, "note": "False Christs"}
-    ]
-  },
-  {
-    "id": "father-son-70x7",
-    "label": "Father + Son = 70×7 = 490 (entire Bible)",
+    "id": "father-and-son-70x7",
+    "label": "The Father and the Son 70x7 mentions",
     "url": "https://kjvcode.com/pattern/father-and-son-70x7/",
-    "note": "Capital-F Father (259 = 37×7) + capital-S Son (231 = 33×7). Possessives and antimentions excluded.",
+    "order": 3,
     "expected": 490,
+    "door": "father-and-son-70x7",
+    "note": "Capital-F Father (259 = 37\u00d77) + capital-S Son (231 = 33\u00d77). Possessives and antimentions excluded.",
     "type": "father_son",
     "expected_father": 259,
     "expected_son": 231,
     "father_antimentions": [
-      {"book": "Luke", "chapter": 16, "verse": 24, "note": "Father Abraham — not God the Father"}
+      {
+        "book": "Luke",
+        "chapter": 16,
+        "verse": 24,
+        "note": "Father Abraham \u2014 not God the Father"
+      }
     ],
     "son_antimentions": [
-      {"book": "Ezekiel", "chapter": null, "verse": null, "note": "All 61 'Son of man' addresses to Ezekiel"},
-      {"book": "Matthew", "chapter": 9,  "verse": 2,    "note": "Jesus addressing the paralytic"},
-      {"book": "Matthew", "chapter": 21, "verse": 28,   "note": "Parable — father to son"},
-      {"book": "Mark",    "chapter": 2,  "verse": 5,    "note": "Jesus addressing the paralytic"},
-      {"book": "Luke",    "chapter": 15, "verse": 31,   "note": "Parable — father to son"},
-      {"book": "Luke",    "chapter": 16, "verse": 25,   "note": "Abraham to rich man in parable"}
+      {
+        "book": "Ezekiel",
+        "chapter": null,
+        "verse": null,
+        "note": "All 61 'Son of man' addresses to Ezekiel"
+      },
+      {
+        "book": "Matthew",
+        "chapter": 9,
+        "verse": 2,
+        "note": "Jesus addressing the paralytic"
+      },
+      {
+        "book": "Matthew",
+        "chapter": 21,
+        "verse": 28,
+        "note": "Parable \u2014 father to son"
+      },
+      {
+        "book": "Mark",
+        "chapter": 2,
+        "verse": 5,
+        "note": "Jesus addressing the paralytic"
+      },
+      {
+        "book": "Luke",
+        "chapter": 15,
+        "verse": 31,
+        "note": "Parable \u2014 father to son"
+      },
+      {
+        "book": "Luke",
+        "chapter": 16,
+        "verse": 25,
+        "note": "Abraham to rich man in parable"
+      }
     ]
   },
   {
-    "id": "jesus-70x7",
-    "label": "Jesus = 70×7 in Every Other NT Book (980 total)",
+    "id": "jesus-70x7-alternating-books",
+    "label": "Jesus in odd NT books 70x7 and 70x7 in even numbered books",
     "url": "https://kjvcode.com/pattern/jesus-70x7/",
-    "note": "490 in odd-numbered NT books + 490 in even-numbered NT books. 4 antimentions excluded (Acts 7:45, Acts 13:6, Colossians 4:11, Hebrews 4:8).",
+    "order": 4,
     "expected": 980,
+    "door": "jesus-70x7-alternating-books",
+    "note": "490 in odd-numbered NT books + 490 in even-numbered NT books. 4 antimentions excluded (Acts 7:45, Acts 13:6, Colossians 4:11, Hebrews 4:8).",
     "type": "alternating_books",
     "term": "Jesus",
     "case_sensitive": false,
@@ -223,10 +263,245 @@
     "expected_odd": 490,
     "expected_even": 490,
     "antimentions": [
-      {"book": "Acts",       "chapter": 7,  "verse": 45},
-      {"book": "Acts",       "chapter": 13, "verse": 6},
-      {"book": "Colossians", "chapter": 4,  "verse": 11},
-      {"book": "Hebrews",    "chapter": 4,  "verse": 8}
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45
+      },
+      {
+        "book": "Acts",
+        "chapter": 13,
+        "verse": 6
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8
+      }
+    ]
+  },
+  {
+    "id": "jesus-777-and-christ-777",
+    "label": "Jesus 777 and Christ 777 mentions",
+    "url": "https://kjvcode.com/pattern/jesus-christ-777x/",
+    "order": 5,
+    "expected": 1554,
+    "door": "jesus-777-and-christ-777",
+    "note": "Jesus(*) = Jesus + Jesus' + JESUS (all caps). Christ(*) = Christ + Christs + Christ's + Christian + Christians. 3 Jesus antimentions + 2 false-Christ antimentions excluded.",
+    "type": "jesus_christ_777",
+    "expected_jesus": 980,
+    "expected_christ": 574,
+    "jesus_antimentions": [
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45,
+        "note": "Refers to Joshua, not Jesus Christ"
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8,
+        "note": "Refers to Joshua, not Jesus Christ"
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11,
+        "note": "Jesus called Justus \u2014 different person"
+      }
+    ],
+    "christ_antimentions": [
+      {
+        "book": "Matthew",
+        "chapter": 24,
+        "verse": 24,
+        "note": "False Christs"
+      },
+      {
+        "book": "Mark",
+        "chapter": 13,
+        "verse": 22,
+        "note": "False Christs"
+      }
+    ]
+  },
+  {
+    "id": "god-and-jesus-7777",
+    "label": "God and Jesus named 7777 times",
+    "url": "https://kjvcode.com/pattern/jesus-god-uppercase-7777x/",
+    "order": 6,
+    "expected": 7777,
+    "door": "god-and-jesus-7777",
+    "note": "All-caps names of God (LORD, GOD, JEHOVAH, I AM, JAH) + all-caps Christ titles (BRANCH, KING) + Jesus/JESUS pure (980). I AM counts only Exodus 3:14's 3 occurrences \u2014 where God defines his own name.",
+    "type": "jesus_god_7777",
+    "jesus_antimentions": [
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11
+      }
+    ]
+  },
+  {
+    "id": "first-and-last-words-77777",
+    "label": "The first and last words of the first and last verses 77777",
+    "url": "https://kjvcode.com/pattern/first-last-words-first-last-verses-77777x/",
+    "order": 7,
+    "expected": 77777,
+    "door": "first-and-last-words-77777",
+    "note": "In (Gen 1:1 first) + earth (Gen 1:1 last) + The (Rev 22:21 first) + Amen (Rev 22:21 last)",
+    "terms": [
+      {
+        "label": "\"In\" \u2014 first word of Genesis 1:1 (case-insensitive)",
+        "word": "in",
+        "exact_form": null
+      },
+      {
+        "label": "\"earth\" \u2014 last word of Genesis 1:1 (exact lowercase only)",
+        "word": "earth",
+        "exact_form": "earth"
+      },
+      {
+        "label": "\"The\" \u2014 first word of Revelation 22:21 (case-insensitive)",
+        "word": "the",
+        "exact_form": null
+      },
+      {
+        "label": "\"Amen\" \u2014 last word of Revelation 22:21 (exact capital-A only)",
+        "word": "amen",
+        "exact_form": "Amen"
+      }
+    ]
+  },
+  {
+    "id": "god-moses-and-jesus-77x77",
+    "label": "God, Moses, and Jesus 77x77 mentions",
+    "url": "https://kjvcode.com/pattern/god-moses-jesus-77x77/",
+    "order": 8,
+    "expected": 5929,
+    "door": "god-moses-and-jesus-77x77",
+    "note": "God('s)=4,101 + Moses(')=848 + Jesus pure=980. Verse-level exclusion of 3 antimetion verses (Acts 7:45, Col 4:11, Heb 4:8) which also contain God. kjvcode.com reports 4102+847 for the individual names; we get 4101+848 \u2014 same total 5,929.",
+    "type": "god_moses_jesus",
+    "jesus_antimentions": [
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8
+      }
+    ]
+  },
+  {
+    "id": "jesus-elijah-and-elias-77x7",
+    "label": "Jesus 77x7 and Elijah with Elias 77x7",
+    "url": "https://kjvcode.com/pattern/jesus-elijah-77x7/",
+    "order": 9,
+    "expected": 1078,
+    "door": "jesus-elijah-and-elias-77x7",
+    "note": "Jesus pure=980, Elijah=68 (Ezra 10:21 excluded \u2014 different person), Elias=30. Total 1,078 = 2\u00d7539 = 2\u00d7(77\u00d77). No possessives of Elijah or Elias exist in the KJV.",
+    "type": "jesus_elijah",
+    "jesus_antimentions": [
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8
+      }
+    ],
+    "elijah_antimentions": [
+      {
+        "book": "Ezra",
+        "chapter": 10,
+        "verse": 21,
+        "note": "A different Elijah \u2014 one of the sons of Harim who took a foreign wife"
+      }
+    ]
+  },
+  {
+    "id": "jesus-christ-david-abraham-980x3",
+    "label": "Jesus, Christ, David, and Abraham (70x7 + 70x7)x3 mentions",
+    "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",
+    "order": 10,
+    "expected": 2940,
+    "door": "jesus-christ-david-abraham-980x3",
+    "note": "Jesus pure=980, Christ('s)=571, David('s)=1139, Abraham('s)=250. Possessives use curly apostrophes in the text. Same 3 Jesus antimentions as pattern 3.",
+    "type": "four_names_980x3",
+    "jesus_antimentions": [
+      {
+        "book": "Acts",
+        "chapter": 7,
+        "verse": 45
+      },
+      {
+        "book": "Hebrews",
+        "chapter": 4,
+        "verse": 8
+      },
+      {
+        "book": "Colossians",
+        "chapter": 4,
+        "verse": 11
+      }
+    ]
+  },
+  {
+    "id": "lord-moses-and-aaron-7777",
+    "label": "LORD, Moses, and Aaron named 7777 times",
+    "url": "https://kjvcode.com/pattern/lord-moses-aaron-7777x/",
+    "order": 11,
+    "expected": 7777,
+    "door": "lord-moses-and-aaron-7777",
+    "note": "LORD|LORD'S (uppercase, case-sensitive, possessive included) + Moses|Moses' + Aaron|Aaron's, entire Bible, no antimentions. KJPBS: 6579 + 848 + 350 = 7777 (authoritative). The three God sent to bring Israel out of Egypt and lead them 40 years in the wilderness (Exodus 6:26).",
+    "type": "lord_moses_aaron_7777"
+  },
+  {
+    "id": "verse-staircase-31102",
+    "label": "7774 plus 7775 plus 7776 plus 7777 verses in the whole Bible",
+    "url": "https://kjvcode.com/pattern/total-verses-in-the-bible-staircase-7777/",
+    "order": 12,
+    "expected": 31102,
+    "door": "verse-staircase-31102",
+    "note": "31,102 is the unique four-consecutive-integer staircase ending on 7,777",
+    "type": "staircase_verses",
+    "staircase": [
+      7774,
+      7775,
+      7776,
+      7777
     ]
   }
 ]

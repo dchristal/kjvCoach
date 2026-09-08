@@ -4,3 +4,4 @@ __pycache__/
 *.deb
 .env
 .aider*
+.opencode/

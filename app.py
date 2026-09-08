@@ -109,10 +109,8 @@ def _build_verify_cache():
     results  = []
     for p in patterns:
         ptype = p.get("type", "word_sum")
-        if ptype == "jesus_inner_circle_1200":
-            r = _verify_inner_circle_1200(p, db)
-        elif ptype == "moses_aaron_1200":
-            r = _verify_moses_aaron_1200(p)
+        if ptype == "lord_moses_aaron_7777":
+            r = _verify_lord_moses_aaron_7777(p, db)
         elif ptype == "fishermen_153":
             r = _verify_fishermen_153(p)
         elif ptype == "jesus_elijah":
@@ -230,9 +228,9 @@ def api_153():
     """Full payload for the 153 public page — crew counts, verses, triangle, rules."""
     _require_db()
     patterns = json.loads(PATTERNS_PATH.read_text())
-    spec = next((p for p in patterns if p.get("id") == "fishermen-153"), None)
+    spec = next((p for p in patterns if p.get("id") == "five-fishermen-153"), None)
     if spec is None:
-        raise HTTPException(404, "fishermen-153 pattern not found")
+        raise HTTPException(404, "five-fishermen-153 pattern not found")
     r = _verify_fishermen_153(spec)
     actual = r["actual"]
 
@@ -904,6 +902,39 @@ def _verify_moses_aaron_1200(p: dict) -> dict:
         "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
                       for lbl, cnt, exp in components],
         "actual": moses + aaron,
+    }
+
+
+def _verify_lord_moses_aaron_7777(p: dict, db) -> dict:
+    """LORD|LORD'S + Moses|Moses' + Aaron|Aaron's, entire Bible, no antimentions.
+
+    KJPBS (authoritative): 6579 + 848 + 350 = 7777. This build's live text scan
+    of the 1769 corpus reports one extra capital LORD (see 'note' in patterns.json);
+    the campaign figure of 7777 follows KJPBS.
+    """
+    corpus = _kjv_corpus()
+    # \bLORD\b also catches the LORD inside "LORD'S" (curly apostrophe is a
+    # non-word char), so this is every capital-LORD name mention. Lowercase
+    # "Lord" is a title, not the covenant name — not counted.
+    pat_lord  = re.compile(r"\bLORD\b")
+    pat_moses = re.compile(r"\bMoses\b")            # also catches Moses'
+    pat_aaron = re.compile(r"\bAaron\b")            # also catches Aaron's; not Aaronites
+
+    lord = moses = aaron = 0
+    for _b, _ch, _v, text in corpus:
+        lord  += len(pat_lord.findall(text))
+        moses += len(pat_moses.findall(text))
+        aaron += len(pat_aaron.findall(text))
+
+    components = [
+        ("LORD | LORD'S — capitals only, entire Bible",  lord,  6579),
+        ("Moses | Moses' — entire Bible",                moses, 848),
+        ("Aaron | Aaron's — entire Bible, no Aaronites", aaron, 350),
+    ]
+    return {
+        "breakdown": [{"label": lbl, "count": cnt, "expected": exp}
+                      for lbl, cnt, exp in components],
+        "actual": lord + moses + aaron,
     }
 
 
