@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>kjvCoach</title>
+<title>The Lab — David Christal</title>
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <!-- build: 2026-09-08a the-net restyle -->
@@ -30,18 +30,18 @@ a:hover{color:#b7e4dc}
 
 header{border-bottom:1px solid var(--line);padding:16px 24px;
   display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+header .brand{flex-basis:100%;margin-bottom:2px;font-size:.72rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--lantern);text-decoration:none}
+header .brand:hover{color:#f3e6c2}
 header h1{font-size:1.3rem;font-weight:500;letter-spacing:.02em;color:#f7fbff;white-space:nowrap}
 header p{font-size:.82rem;color:var(--muted);flex:1;font-style:italic}
 nav{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
-nav button{background:transparent;border:1px solid var(--line);color:var(--ink);
-  padding:6px 16px;cursor:pointer;font:inherit;font-size:.85rem;letter-spacing:.04em;
-  transition:border-color .15s,color .15s}
-nav button:hover{border-color:var(--foam);color:#f7fbff}
-nav button.active{border-color:rgba(228,204,150,.45);color:var(--lantern)}
-nav a.public-door{background:transparent;border:1px solid rgba(228,204,150,.45);
-  color:var(--lantern);padding:6px 16px;text-decoration:none;font-size:.85rem;
-  letter-spacing:.14em;text-transform:uppercase}
-nav a.public-door:hover{border-color:var(--lantern);color:#f3e6c2}
+/* Three identical boxed controls, gold throughout; the current one is filled. */
+nav button{background:transparent;border:1px solid rgba(228,204,150,.35);
+  color:var(--lantern);padding:6px 16px;cursor:pointer;font:inherit;font-size:.85rem;
+  letter-spacing:.04em;transition:background .15s,border-color .15s}
+nav button:hover{border-color:rgba(228,204,150,.65)}
+nav button.active{background:rgba(228,204,150,.1);border-color:rgba(228,204,150,.65)}
 
 .container{width:min(880px,calc(100% - 48px));margin:0 auto;padding:28px 0 64px}
 
@@ -52,7 +52,13 @@ nav a.public-door:hover{border-color:var(--lantern);color:#f3e6c2}
   font:inherit;color:var(--ink);background:var(--panel);
   border:1px solid var(--line);border-radius:0}
 .search-row input[type=text]{flex:1;min-width:200px;padding:10px 14px;font-size:1rem}
-.search-row select{padding:10px 8px;font-size:.9rem}
+.search-row select{
+  padding:10px 30px 10px 12px;font-size:.9rem;cursor:pointer;
+  appearance:none;-webkit-appearance:none;-moz-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),
+    linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:right 13px center,right 8px center;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 .search-row input[type=text]:focus,.ref-row input:focus,.search-row select:focus,
 .results-plain:focus,.chat-footer textarea:focus{outline:none;border-color:rgba(142,201,192,.45)}
 ::placeholder{color:var(--dim)}
@@ -230,15 +236,14 @@ nav a.public-door:hover{border-color:var(--lantern);color:#f3e6c2}
 <body>
 
 <header>
-  <h1>✝ kjvCoach</h1>
-  <p>King James Bible — scripture only, no AI generation</p>
-  <p id="build-stamp" style="width:100%;margin:6px 0 0;font-size:.75rem;opacity:.55;font-style:normal">build 2026-09-08a · the-net restyle</p>
+  <a class="brand" href="https://davidchristal.com/">David Christal</a>
+  <h1>✝ The Lab</h1>
+  <p>King James Bible — search, facts, and live pattern verification</p>
+  <p id="build-stamp" style="width:100%;margin:6px 0 0;font-size:.75rem;opacity:.55;font-style:normal">build 2026-09-09a · the lab</p>
   <nav>
     <button id="btn-search" onclick="showTab('search')">Search</button>
     <button id="btn-stats"  onclick="showTab('stats')">Bible Facts</button>
     <button class="active" id="btn-verify" onclick="showTab('verify')">Verify Patterns</button>
-    <button id="btn-chat" onclick="showTab('chat')">Chat</button>
-    <a href="/153" class="public-door">153</a>
   </nav>
 </header>
 
@@ -293,40 +298,19 @@ nav a.public-door:hover{border-color:var(--lantern);color:#f3e6c2}
     <div id="verify-content"><div class="loading">Loading…</div></div>
   </div>
 
-  <!-- CHAT TAB -->
-  <div id="tab-chat" class="hidden">
-    <div style="height:12px"></div>
-    <div class="chat-wrap">
-      <div id="chat-messages" class="chat-messages">
-        <div class="chat-bubble assistant">Ask anything about the KJV — word counts, verse lookups, scripture on any topic. Answers come from your local LLM grounded in the King James text.</div>
-      </div>
-      <div class="chat-footer">
-        <textarea id="chat-input" placeholder="Ask a question…"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
-          oninput="this.style.height='48px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
-        <button class="btn btn-brown" onclick="sendChat()">Send</button>
-      </div>
-      <div class="chat-meta">
-        <span id="chat-model-lbl"></span>
-        <a onclick="resetChat()">New conversation</a>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
 let statsLoaded = false;
 
 function showTab(name) {
-  ['search','stats','verify','chat'].forEach(t => {
+  ['search','stats','verify'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('hidden', t !== name);
     const btn = document.getElementById('btn-'+t);
     if (btn) btn.classList.toggle('active', t === name);
   });
   if (name === 'stats'  && !statsLoaded)  loadStats();
   if (name === 'verify' && !verifyLoaded) runVerify();
-  if (name === 'chat')                    _loadChatInfo();
 }
 
 function hl(text, q) {
@@ -553,15 +537,15 @@ function renderStats(s) {
   <div class="stat-grid">
     <div class="stat-card">
       <div class="stat-val">${fmt(t.OT.verses)}</div>
-      <div class="stat-lbl">OT Verses<br><span style="font-size:.78rem;color:#bbb">${fmt(t.OT.words)} words</span></div>
+      <div class="stat-lbl">OT Verses<br><span style="font-size:.78rem;color:var(--dim)">${fmt(t.OT.words)} words</span></div>
     </div>
     <div class="stat-card">
       <div class="stat-val">${fmt(t.NT.verses)}</div>
-      <div class="stat-lbl">NT Verses<br><span style="font-size:.78rem;color:#bbb">${fmt(t.NT.words)} words</span></div>
+      <div class="stat-lbl">NT Verses<br><span style="font-size:.78rem;color:var(--dim)">${fmt(t.NT.words)} words</span></div>
     </div>
     <div class="stat-card">
       <div class="stat-val">${t.OT_NT_word_ratio}</div>
-      <div class="stat-lbl">OT÷NT Word Ratio<br><span style="font-size:.78rem;color:#bbb">kjvcode.com: 77%</span></div>
+      <div class="stat-lbl">OT÷NT Word Ratio<br><span style="font-size:.78rem;color:var(--dim)">kjvcode.com: 77%</span></div>
     </div>
   </div>
 
@@ -589,13 +573,13 @@ function renderStats(s) {
   </div>
   <div class="vblock">
     <div class="vblock-head">
-      <div class="vblref" data-ref="${escHtml(s.middle_verse.ref)}">Middle verse — ${escHtml(s.middle_verse.ref)} <span style="color:#ccc">(${escHtml(s.middle_verse.note)})</span></div>
+      <div class="vblref" data-ref="${escHtml(s.middle_verse.ref)}">Middle verse — ${escHtml(s.middle_verse.ref)} <span style="color:var(--dim)">(${escHtml(s.middle_verse.note)})</span></div>
       <button type="button" class="copy-btn" onclick="copyVblock(this)">Copy</button>
     </div>
     <div class="vbltxt">${escHtml(s.middle_verse.text)}</div>
   </div>
 
-  <div class="sec">kjvcode.com Patterns <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(computed from source text)</span></div>
+  <div class="sec">kjvcode.com Patterns <span style="font-size:.75rem;font-weight:400;color:var(--dim);text-transform:none">(computed from source text)</span></div>
   <div class="fact-table">
     <div class="fact-row">
       <span>"Jesus" appears in exactly 70×7 (490) verses
@@ -612,9 +596,9 @@ function renderStats(s) {
     </div>
     <div class="fact-row">
       <span>Verses ending in punctuation
-        <span style="font-size:.78rem;color:#aaa">(kjvcode.com: 77%)</span>
+        <span style="font-size:.78rem;color:var(--dim)">(kjvcode.com: 77%)</span>
       </span>
-      <span class="fval">${fmt(kp.verses_ending_punct)} <span style="font-weight:400;color:#aaa">(${kp.punct_end_pct}%)</span></span>
+      <span class="fval">${fmt(kp.verses_ending_punct)} <span style="font-weight:400;color:var(--dim)">(${kp.punct_end_pct}%)</span></span>
     </div>
     <div class="fact-row">
       <span>Verses with no ending punctuation
@@ -625,7 +609,7 @@ function renderStats(s) {
     <div class="fact-row"><span>OT÷NT word ratio</span><span class="fval">${kp.OT_NT_ratio||t.OT_NT_word_ratio}</span></div>
   </div>
 
-  <div class="sec">Keyword Occurrences <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(verses containing word)</span></div>
+  <div class="sec">Keyword Occurrences <span style="font-size:.75rem;font-weight:400;color:var(--dim);text-transform:none">(verses containing word)</span></div>
   <div class="fact-table">
     ${Object.entries(s.keyword_counts).map(([k,v])=>`
       <div class="fact-row">
@@ -634,7 +618,7 @@ function renderStats(s) {
       </div>`).join('')}
   </div>
 
-  <div class="sec">Most Common Words <span style="font-size:.75rem;font-weight:400;color:#aaa;text-transform:none">(stop words excluded)</span></div>
+  <div class="sec">Most Common Words <span style="font-size:.75rem;font-weight:400;color:var(--dim);text-transform:none">(stop words excluded)</span></div>
   <div class="tag-cloud">
     ${s.top_words.map(w=>`<div class="tag">${w.word}<strong>${fmt(w.count)}</strong></div>`).join('')}
   </div>
@@ -674,7 +658,7 @@ async function runVerify(force=false) {
 }
 
 function renderVerify(d) {
-  let html = `<div style="font-size:.78rem;color:#aaa;margin-bottom:16px">
+  let html = `<div style="font-size:.78rem;color:var(--dim);margin-bottom:16px">
     Source: <strong>${d.source}</strong>
   </div>`;
 
@@ -714,11 +698,11 @@ function renderFourNames(p) {
     const rowPass = t.count === t.expected ? 'badge-pass' : 'badge-fail';
     const diff = t.count - t.expected;
     const diffStr = diff !== 0
-      ? ` <span style="font-size:.75rem;color:#b00">(${diff>0?'+':''}${fmt(diff)})</span>`
+      ? ` <span style="font-size:.75rem;color:var(--fail)">(${diff>0?'+':''}${fmt(diff)})</span>`
       : '';
     return `<tr>
       <td style="padding:7px 14px">${escHtml(t.label)}</td>
-      <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
+      <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">expected ${fmt(t.expected)}</td>
       <td style="padding:7px 14px;text-align:right;font-weight:700">
         <span class="result-badge ${rowPass}" style="padding:2px 8px">${fmt(t.count)}</span>${diffStr}
       </td>
@@ -758,7 +742,7 @@ function renderInnerCircle(p) {
   const passIcon  = p.pass ? '✓' : '✗';
   const rows = p.breakdown.map(t => `<tr>
     <td style="padding:7px 14px">${escHtml(t.label)}</td>
-    <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
+    <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">expected ${fmt(t.expected)}</td>
     <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}</td>
   </tr>`).join('');
   return `<div class="pattern-card">
@@ -792,7 +776,7 @@ function renderMosesAaron(p) {
   const passIcon  = p.pass ? '✓' : '✗';
   const rows = p.breakdown.map(t => `<tr>
     <td style="padding:7px 14px">${escHtml(t.label)}</td>
-    <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
+    <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">expected ${fmt(t.expected)}</td>
     <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}</td>
   </tr>`).join('');
   return `<div class="pattern-card">
@@ -826,7 +810,7 @@ function renderFishermen153(p) {
   const passIcon  = p.pass ? '✓' : '✗';
   const rows = p.breakdown.map(t => `<tr>
     <td style="padding:7px 14px">${escHtml(t.label)}</td>
-    <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
+    <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">expected ${fmt(t.expected)}</td>
     <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}</td>
   </tr>`).join('');
   const tri = p.triangle || {n:17, series:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17], sum:153};
@@ -850,7 +834,7 @@ function renderFishermen153(p) {
       <div class="vblref">${escHtml(catchV.ref)}</div>
       <div class="vbltxt">${escHtml(catchV.text)}</div>
     </div>` : ''}
-    <div style="padding:12px 16px 4px;font-size:.85rem;color:#555;line-height:1.6">
+    <div style="padding:12px 16px 4px;font-size:.85rem;color:var(--muted);line-height:1.6">
       <div><strong>17th triangular number</strong> — ${series} = <strong>${fmt(tri.sum)}</strong></div>
       <div style="margin-top:4px"><strong>Digit cubes</strong> — ${cubeBits} = <strong>${fmt(cubes.sum)}</strong></div>
     </div>
@@ -874,7 +858,7 @@ function renderJesusElijah(p) {
   const passIcon  = p.pass ? '✓' : '✗';
   const rows = p.breakdown.map(t => `<tr>
     <td style="padding:7px 14px">${escHtml(t.label)}</td>
-    <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">expected ${fmt(t.expected)}</td>
+    <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">expected ${fmt(t.expected)}</td>
     <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}</td>
   </tr>`).join('');
   return `<div class="pattern-card">
@@ -909,11 +893,11 @@ function renderGodMosesJesus(p) {
   const rows = p.breakdown.map(t => {
     const diff = t.count - t.expected;
     const diffStr = diff !== 0
-      ? ` <span style="font-size:.75rem;color:#b00">(${diff>0?'+':''}${fmt(diff)} vs kjvcode)</span>`
+      ? ` <span style="font-size:.75rem;color:var(--fail)">(${diff>0?'+':''}${fmt(diff)} vs kjvcode)</span>`
       : '';
     return `<tr>
       <td style="padding:7px 14px">${escHtml(t.label)}</td>
-      <td style="padding:7px 14px;text-align:right;color:#999;font-size:.85rem">kjvcode: ${fmt(t.expected)}</td>
+      <td style="padding:7px 14px;text-align:right;color:var(--dim);font-size:.85rem">kjvcode: ${fmt(t.expected)}</td>
       <td style="padding:7px 14px;text-align:right;font-weight:700">${fmt(t.count)}${diffStr}</td>
     </tr>`;
   }).join('');
@@ -985,12 +969,12 @@ function renderStaircase(p) {
   const stairs = b.staircase;
   const stairCells = stairs.map((n, i) => {
     const isLast = i === stairs.length - 1;
-    return `<span style="display:inline-block;background:${isLast?'#d4edda':'#f0ece3'};
-      border:1px solid ${isLast?'#a3d4ae':'#ddd4c0'};border-radius:6px;
-      padding:6px 14px;font-size:1rem;font-weight:700;color:${isLast?'#1a5c2a':'#2c2416'}">
+    return `<span style="display:inline-block;background:${isLast?'rgba(142,201,192,.18)':'rgba(255,255,255,.05)'};
+      border:1px solid ${isLast?'rgba(142,201,192,.45)':'var(--line)'};border-radius:0;
+      padding:6px 14px;font-size:1rem;font-weight:700;color:${isLast?'var(--foam)':'var(--ink)'}">
       ${fmt(n)}
     </span>`;
-  }).join(`<span style="font-size:1.2rem;padding:0 8px;color:#999">+</span>`);
+  }).join(`<span style="font-size:1.2rem;padding:0 8px;color:var(--dim)">+</span>`);
 
   return `<div class="pattern-card">
     <div class="pattern-head">
@@ -1003,15 +987,15 @@ function renderStaircase(p) {
         ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
       </div>
     </div>
-    <div style="padding:18px 20px;border-top:1px solid #f0ece3">
-      <div style="margin-bottom:14px;font-size:.85rem;color:#666">
+    <div style="padding:18px 20px;border-top:1px solid rgba(255,255,255,.05)">
+      <div style="margin-bottom:14px;font-size:.85rem;color:var(--muted)">
         Total verses counted from KJV text:
-        <strong style="font-size:1.1rem;color:#2c2416;margin-left:6px">${fmt(b.total_verses)}</strong>
+        <strong style="font-size:1.1rem;color:var(--ink);margin-left:6px">${fmt(b.total_verses)}</strong>
       </div>
       <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin-bottom:14px">
         ${stairCells}
-        <span style="font-size:1.2rem;padding:0 8px;color:#999">=</span>
-        <span style="font-size:1.1rem;font-weight:700;color:#5a3e1b">${fmt(b.staircase_sum)}</span>
+        <span style="font-size:1.2rem;padding:0 8px;color:var(--dim)">=</span>
+        <span style="font-size:1.1rem;font-weight:700;color:var(--lantern)">${fmt(b.staircase_sum)}</span>
       </div>
       <div>
         <span class="result-badge ${passClass}" style="padding:4px 12px">
@@ -1031,7 +1015,7 @@ function renderJesusChrist(p) {
   p.breakdown.forEach((t, i) => {
     const tPass = t.count === targets[i] ? 'badge-pass' : 'badge-fail';
     const antiList = t.antimentions.map(a =>
-      `<div style="font-size:.77rem;color:#888;margin-top:2px">
+      `<div style="font-size:.77rem;color:var(--dim);margin-top:2px">
          <span class="form-chip">${escHtml(a.ref)}</span> ${escHtml(a.note)}
        </div>`).join('');
     termRows += `<tr>
@@ -1039,7 +1023,7 @@ function renderJesusChrist(p) {
         <strong>${escHtml(t.label)}</strong>${antiList}
       </td>
       <td style="padding:9px 14px;text-align:right;vertical-align:top">
-        <span style="font-size:.8rem;color:#999">raw: ${fmt(t.raw_count)} − ${t.antimentions.length} antimentation${t.antimentions.length!==1?'s':''}</span>
+        <span style="font-size:.8rem;color:var(--dim)">raw: ${fmt(t.raw_count)} − ${t.antimentions.length} antimentation${t.antimentions.length!==1?'s':''}</span>
       </td>
       <td style="padding:9px 14px;text-align:right;vertical-align:top;font-weight:700;font-size:1rem">
         <span class="result-badge ${tPass}" style="padding:2px 8px">${fmt(t.count)}</span>
@@ -1082,7 +1066,7 @@ function renderFatherSon(p) {
   let termRows = '';
   for (const t of p.breakdown) {
     const antiList = t.antimentions.map(a =>
-      `<div style="font-size:.77rem;color:#888;margin-top:2px">
+      `<div style="font-size:.77rem;color:var(--dim);margin-top:2px">
          <span class="form-chip">${escHtml(a.ref)}</span> ${escHtml(a.note)}
        </div>`).join('');
     const tPass = (t.word === 'Father')
@@ -1093,7 +1077,7 @@ function renderFatherSon(p) {
         <strong>${escHtml(t.label)}</strong>${antiList}
       </td>
       <td style="padding:9px 14px;text-align:right;vertical-align:top">
-        <span style="font-size:.8rem;color:#999">raw: ${fmt(t.ccdb_count)} − ${t.antimentions.length === 1 ? '1' : fmt(t.antimentions.length)} antimentation${t.antimentions.length!==1?'s':''}</span>
+        <span style="font-size:.8rem;color:var(--dim)">raw: ${fmt(t.ccdb_count)} − ${t.antimentions.length === 1 ? '1' : fmt(t.antimentions.length)} antimentation${t.antimentions.length!==1?'s':''}</span>
       </td>
       <td style="padding:9px 14px;text-align:right;vertical-align:top;font-weight:700;font-size:1rem">
         <span class="result-badge ${tPass}" style="padding:2px 8px">${fmt(t.count)}</span>
@@ -1161,15 +1145,15 @@ function renderAlternatingBooks(p) {
         ${p.url ? `<a class="pattern-link" href="${p.url}" target="_blank" rel="noopener">kjvcode.com ↗</a>` : ''}
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid #f0ece3">
-      <div style="border-right:1px solid #f0ece3">
-        <div style="background:#f8f5ef;padding:7px 10px;font-size:.72rem;font-weight:700;
-          color:#7a5a2b;letter-spacing:.05em;text-transform:uppercase">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid rgba(255,255,255,.05)">
+      <div style="border-right:1px solid rgba(255,255,255,.05)">
+        <div style="background:var(--panel);padding:7px 10px;font-size:.72rem;font-weight:700;
+          color:var(--lantern);letter-spacing:.05em;text-transform:uppercase">
           Odd-numbered books
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:.85rem">
           ${oddRows}
-          <tr style="background:#f8f5ef;border-top:2px solid #ddd4c0">
+          <tr style="background:var(--panel);border-top:2px solid var(--line)">
             <td style="padding:7px 10px;font-weight:700">ODD TOTAL</td>
             <td style="padding:7px 10px;text-align:right;font-weight:700;font-size:1rem">
               <span class="result-badge ${oddPass}" style="padding:2px 8px;font-size:.8rem">
@@ -1180,13 +1164,13 @@ function renderAlternatingBooks(p) {
         </table>
       </div>
       <div>
-        <div style="background:#f8f5ef;padding:7px 10px;font-size:.72rem;font-weight:700;
-          color:#7a5a2b;letter-spacing:.05em;text-transform:uppercase">
+        <div style="background:var(--panel);padding:7px 10px;font-size:.72rem;font-weight:700;
+          color:var(--lantern);letter-spacing:.05em;text-transform:uppercase">
           Even-numbered books
         </div>
         <table style="width:100%;border-collapse:collapse;font-size:.85rem">
           ${evenRows}
-          <tr style="background:#f8f5ef;border-top:2px solid #ddd4c0">
+          <tr style="background:var(--panel);border-top:2px solid var(--line)">
             <td style="padding:7px 10px;font-weight:700">EVEN TOTAL</td>
             <td style="padding:7px 10px;text-align:right;font-weight:700;font-size:1rem">
               <span class="result-badge ${evenPass}" style="padding:2px 8px;font-size:.8rem">
@@ -1201,7 +1185,7 @@ function renderAlternatingBooks(p) {
       <strong>4 antimentions excluded</strong> (Jesus referring to someone other than Christ):
       ${antiList}
     </div>
-    <div class="pattern-result" style="border-top:2px solid #ddd4c0;font-size:.9rem">
+    <div class="pattern-result" style="border-top:2px solid var(--line);font-size:.9rem">
       <strong>TOTAL: ${fmt(p.actual)}</strong>
       &nbsp;=&nbsp; ${fmt(p.odd_total)} + ${fmt(p.even_total)}
       &nbsp;&nbsp; expected: ${fmt(p.expected)}
@@ -1233,7 +1217,7 @@ function renderWordSum(p) {
         ? `exact form <strong>${escHtml(t.exact)}</strong>`
         : 'all forms (case-insensitive)';
       rows += `<tr>
-        <td>${escHtml(t.label)}<br><span style="font-size:.75rem;color:#aaa">Rule: ${ruleLabel}</span></td>
+        <td>${escHtml(t.label)}<br><span style="font-size:.75rem;color:var(--dim)">Rule: ${ruleLabel}</span></td>
         <td class="col-forms">${formChips}</td>
         <td class="col-count">${fmt(t.count)}</td>
       </tr>`;
@@ -1242,7 +1226,7 @@ function renderWordSum(p) {
 
   // Total row
   const diff = p.actual - p.expected;
-  const diffStr = diff === 0 ? '' : ` <span style="color:#b00;font-size:.8rem">(${diff>0?'+':''}${fmt(diff)} vs expected)</span>`;
+  const diffStr = diff === 0 ? '' : ` <span style="color:var(--fail);font-size:.8rem">(${diff>0?'+':''}${fmt(diff)} vs expected)</span>`;
   rows += `<tr class="total-row">
     <td colspan="2"><strong>TOTAL</strong> &nbsp; expected: ${fmt(p.expected)}</td>
     <td class="col-count">${fmt(p.actual)}${diffStr}</td>
@@ -1421,7 +1405,7 @@ async function sendChat() {
 function resetChat() {
   chatHistory = [];
   const el = document.getElementById('chat-messages');
-  el.innerHTML = '<div class="chat-bubble assistant">Ask anything about the KJV — word counts, verse lookups, scripture on any topic. Answers come from your local LLM grounded in the King James text.</div>';
+  el.innerHTML = '<div class="chat-bubble assistant">Ask about the King James Bible — a word count, a reference, or scripture on any topic. Replies are terse by design: KJV verses and figures only, never paraphrased or generated. A reference like (John 3:16) is a pointer — open it in full on the Search tab.</div>';
 }
 
 runVerify();
