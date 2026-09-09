@@ -5,7 +5,7 @@
     "url": "https://kjvcode.com/pattern/elton-anomaly/",
     "order": 1,
     "expected": 823543,
-    "door": "7x7x7x7x7x7x7-words-and-numbers",
+    "door": "/door/",
     "note": "7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7 \u00d7 7",
     "terms": [
       {
@@ -21,7 +21,7 @@
     "url": "https://kjvcode.com/pattern/153-fishes/",
     "order": 2,
     "expected": 153,
-    "door": "five-fishermen-153",
+    "door": "/door/five-fishermen-153.html",
     "note": "John 21:11 numbers the catch at 153. 153 is the 17th triangular number (1+2+\u2026+17) and 1\u00b3+5\u00b3+3\u00b3. The five men named in that boat \u2014 Peter, Thomas, Nathanael, and the sons of Zebedee (James, John) \u2014 are named 153 times in the Gospels. James excludes James the Less (8\u00d7) and the Lord's brother (2\u00d7). John counts 20 apostle verses only.",
     "triangle_n": 17,
     "type": "fishermen_153",
@@ -196,7 +196,7 @@
     "url": "https://kjvcode.com/pattern/father-and-son-70x7/",
     "order": 3,
     "expected": 490,
-    "door": "father-and-son-70x7",
+    "door": "/door/father-and-son-70x7.html",
     "note": "Capital-F Father (259 = 37\u00d77) + capital-S Son (231 = 33\u00d77). Possessives and antimentions excluded.",
     "type": "father_son",
     "expected_father": 259,
@@ -254,7 +254,7 @@
     "url": "https://kjvcode.com/pattern/jesus-70x7/",
     "order": 4,
     "expected": 980,
-    "door": "jesus-70x7-alternating-books",
+    "door": "/door/jesus-70x7-alternating-books.html",
     "note": "490 in odd-numbered NT books + 490 in even-numbered NT books. 4 antimentions excluded (Acts 7:45, Acts 13:6, Colossians 4:11, Hebrews 4:8).",
     "type": "alternating_books",
     "term": "Jesus",
@@ -291,7 +291,7 @@
     "url": "https://kjvcode.com/pattern/jesus-christ-777x/",
     "order": 5,
     "expected": 1554,
-    "door": "jesus-777-and-christ-777",
+    "door": "/door/jesus-777-and-christ-777.html",
     "note": "Jesus(*) = Jesus + Jesus' + JESUS (all caps). Christ(*) = Christ + Christs + Christ's + Christian + Christians. 3 Jesus antimentions + 2 false-Christ antimentions excluded.",
     "type": "jesus_christ_777",
     "expected_jesus": 980,
@@ -337,7 +337,7 @@
     "url": "https://kjvcode.com/pattern/jesus-god-uppercase-7777x/",
     "order": 6,
     "expected": 7777,
-    "door": "god-and-jesus-7777",
+    "door": "/door/god-and-jesus-7777.html",
     "note": "All-caps names of God (LORD, GOD, JEHOVAH, I AM, JAH) + all-caps Christ titles (BRANCH, KING) + Jesus/JESUS pure (980). I AM counts only Exodus 3:14's 3 occurrences \u2014 where God defines his own name.",
     "type": "jesus_god_7777",
     "jesus_antimentions": [
@@ -364,7 +364,7 @@
     "url": "https://kjvcode.com/pattern/first-last-words-first-last-verses-77777x/",
     "order": 7,
     "expected": 77777,
-    "door": "first-and-last-words-77777",
+    "door": "/door/first-and-last-words-77777.html",
     "note": "In (Gen 1:1 first) + earth (Gen 1:1 last) + The (Rev 22:21 first) + Amen (Rev 22:21 last)",
     "terms": [
       {
@@ -395,7 +395,7 @@
     "url": "https://kjvcode.com/pattern/god-moses-jesus-77x77/",
     "order": 8,
     "expected": 5929,
-    "door": "god-moses-and-jesus-77x77",
+    "door": "/door/god-moses-and-jesus-77x77.html",
     "note": "God('s)=4,101 + Moses(')=848 + Jesus pure=980. Verse-level exclusion of 3 antimetion verses (Acts 7:45, Col 4:11, Heb 4:8) which also contain God. kjvcode.com reports 4102+847 for the individual names; we get 4101+848 \u2014 same total 5,929.",
     "type": "god_moses_jesus",
     "jesus_antimentions": [
@@ -422,7 +422,7 @@
     "url": "https://kjvcode.com/pattern/jesus-elijah-77x7/",
     "order": 9,
     "expected": 1078,
-    "door": "jesus-elijah-and-elias-77x7",
+    "door": "/door/jesus-elijah-and-elias-77x7.html",
     "note": "Jesus pure=980, Elijah=68 (Ezra 10:21 excluded \u2014 different person), Elias=30. Total 1,078 = 2\u00d7539 = 2\u00d7(77\u00d77). No possessives of Elijah or Elias exist in the KJV.",
     "type": "jesus_elijah",
     "jesus_antimentions": [
@@ -457,7 +457,7 @@
     "url": "https://kjvcode.com/pattern/jesus-christ-david-abraham-980x3/",
     "order": 10,
     "expected": 2940,
-    "door": "jesus-christ-david-abraham-980x3",
+    "door": "/door/jesus-christ-david-abraham-980x3.html",
     "note": "Jesus pure=980, Christ('s)=571, David('s)=1139, Abraham('s)=250. Possessives use curly apostrophes in the text. Same 3 Jesus antimentions as pattern 3.",
     "type": "four_names_980x3",
     "jesus_antimentions": [
@@ -484,7 +484,7 @@
     "url": "https://kjvcode.com/pattern/lord-moses-aaron-7777x/",
     "order": 11,
     "expected": 7777,
-    "door": "lord-moses-and-aaron-7777",
+    "door": "/door/lord-moses-and-aaron-7777.html",
     "note": "LORD|LORD'S (uppercase, case-sensitive, possessive included) + Moses|Moses' + Aaron|Aaron's, entire Bible, no antimentions. KJPBS: 6579 + 848 + 350 = 7777 (authoritative). The three God sent to bring Israel out of Egypt and lead them 40 years in the wilderness (Exodus 6:26).",
     "type": "lord_moses_aaron_7777"
   },
@@ -494,7 +494,7 @@
     "url": "https://kjvcode.com/pattern/total-verses-in-the-bible-staircase-7777/",
     "order": 12,
     "expected": 31102,
-    "door": "verse-staircase-31102",
+    "door": "/door/verse-staircase-31102.html",
     "note": "31,102 is the unique four-consecutive-integer staircase ending on 7,777",
     "type": "staircase_verses",
     "staircase": [

@@ -136,6 +136,7 @@ def _build_verify_cache():
             "id":       p["id"],
             "label":    p["label"],
             "url":      p.get("url", ""),
+            "door":     p.get("door", ""),
             "note":     p.get("note", ""),
             "type":     ptype,
             "expected": expected,
