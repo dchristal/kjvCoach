@@ -155,6 +155,10 @@ nav button.active{background:rgba(228,204,150,.1);border-color:rgba(228,204,150,
 .verify-sub{font-size:.85rem;color:var(--muted);line-height:1.55;max-width:620px}
 
 .pattern-card{border:1px solid var(--line);border-radius:0;margin-bottom:18px;overflow:hidden}
+.pattern-card.flash{animation:cardflash 2.2s ease-out}
+@keyframes cardflash{
+  0%{border-color:var(--lantern);box-shadow:0 0 0 1px var(--lantern),0 0 24px rgba(228,204,150,.35)}
+  100%{border-color:var(--line);box-shadow:none}}
 .pattern-head{display:flex;justify-content:space-between;align-items:flex-start;
   padding:14px 18px 12px;border-bottom:1px solid var(--line);gap:12px}
 .pattern-title{font-size:1rem;font-weight:500;color:#f0f6fa;margin-bottom:4px}
@@ -675,9 +679,34 @@ function renderVerify(d) {
     html += renderPattern(p);
   }
   document.getElementById('verify-content').innerHTML = html;
+  _gotoPatternHash();
 }
 
+// Deep link from a door page: lab.davidchristal.com/ui#<pattern-id>
+try { history.scrollRestoration = 'manual'; } catch (e) {}
+function _gotoPatternHash(tries) {
+  tries = tries || 0;
+  let id;
+  try { id = decodeURIComponent((location.hash || '').slice(1)); } catch (e) { return; }
+  if (!id) return;
+  const el = document.getElementById('pat-' + id);
+  if (!el) { if (tries < 40) setTimeout(() => _gotoPatternHash(tries + 1), 100); return; }
+  // Re-assert twice: browser scroll-restoration on reload can fire after us.
+  const jump = () => el.scrollIntoView({ block: 'center' });
+  jump();
+  setTimeout(jump, 120);
+  setTimeout(jump, 400);
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 2400);
+}
+window.addEventListener('hashchange', () => { showTab('verify'); _gotoPatternHash(); });
+
 function renderPattern(p) {
+  const inner = _renderPatternInner(p);
+  return p.id ? inner.replace('<div class="pattern-card">', `<div class="pattern-card" id="pat-${p.id}">`) : inner;
+}
+
+function _renderPatternInner(p) {
   if (p.type === 'alternating_books') return renderAlternatingBooks(p);
   if (p.type === 'father_son')        return renderFatherSon(p);
   if (p.type === 'jesus_christ_777')  return renderJesusChrist(p);
