@@ -4,4 +4,9 @@ __pycache__/
 *.deb
 .env
 .aider*
-.opencode/
+.opencode/*
+!.opencode/notes.md
+!.opencode/agents/
+
+# VSCodium per-workspace config (ai agent menu)
+.vscode/
